@@ -1,0 +1,3711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcador</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #0a0a0b;
+    --paper: #111114;
+    --card: #18181c;
+    --card2: #1f1f25;
+    --rule: rgba(255,255,255,0.06);
+    --rule2: rgba(255,255,255,0.12);
+    --smoke: #5c5c6e;
+    --ash: #3a3a48;
+    --cream: #f0ede6;
+    --dim: #8e8ea0;
+
+    --gold: #f0c060;
+    --mint: #5fd4a4;
+    --plum: #c87fcc;
+    --coral: #e8705a;
+
+    --gold-bg: rgba(240,192,96,0.1);
+    --mint-bg: rgba(95,212,164,0.1);
+    --plum-bg: rgba(200,127,204,0.1);
+    --coral-bg: rgba(232,112,90,0.1);
+
+    --r: 14px;
+    --r-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Grain texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.35;
+  }
+
+  /* Ambient glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -30%;
+    right: -10%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(95,212,164,0.03) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 36px 48px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .brand-name {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 2.4rem;
+    font-weight: 400;
+    letter-spacing: -1px;
+    color: var(--cream);
+    line-height: 1;
+  }
+
+  .brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--smoke);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 2px;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    padding: 4px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 22px;
+    border-radius: calc(var(--r) - 4px);
+    gap: 4px;
+    min-width: 70px;
+  }
+
+  .stat-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--smoke);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .stat-film { background: var(--gold-bg); }
+  .stat-film .stat-num { color: var(--gold); }
+  .stat-series { background: var(--mint-bg); }
+  .stat-series .stat-num { color: var(--mint); }
+  .stat-book { background: var(--plum-bg); }
+  .stat-book .stat-num { color: var(--plum); }
+  .stat-novela { background: var(--coral-bg); }
+  .stat-novela .stat-num { color: var(--coral); }
+
+  /* ── MAIN ── */
+  main {
+    position: relative;
+    z-index: 10;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 40px 48px 80px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--rule);
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 22px;
+    border: none;
+    background: transparent;
+    color: var(--smoke);
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tab-btn:hover { color: var(--cream); }
+
+  .tab-btn.active { color: var(--cream); }
+
+  .tab-btn[data-tab="filme"].active { border-bottom-color: var(--gold); color: var(--gold); }
+  .tab-btn[data-tab="serie"].active { border-bottom-color: var(--mint); color: var(--mint); }
+  .tab-btn[data-tab="livro"].active { border-bottom-color: var(--plum); color: var(--plum); }
+  .tab-btn[data-tab="novela"].active { border-bottom-color: var(--coral); color: var(--coral); }
+  .tab-btn[data-tab="all"].active { border-bottom-color: var(--cream); }
+  .tab-btn[data-tab="concluido"].active { border-bottom-color: var(--mint); color: var(--mint); }
+
+  .tab-icon { font-size: 0.95rem; display: flex; align-items: center; }
+  .tab-icon svg { display: block; }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 280px;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-sm);
+    padding: 10px 16px 10px 38px;
+    color: var(--cream);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-wrap input:focus { border-color: var(--rule2); }
+  .search-wrap input::placeholder { color: var(--ash); }
+
+  .search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ash);
+    font-size: 0.85rem;
+  }
+
+  .btn-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--mint);
+    background: var(--mint-bg);
+    color: var(--mint);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .btn-add:hover {
+    background: var(--mint);
+    color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(95,212,164,0.2);
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 14px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    padding: 20px;
+    cursor: default;
+    transition: all 0.22s ease;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Left accent bar */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: var(--r) 0 0 var(--r);
+  }
+
+  .card[data-type="filme"]::before { background: linear-gradient(180deg, var(--gold), transparent); }
+  .card[data-type="serie"]::before { background: linear-gradient(180deg, var(--mint), transparent); }
+  .card[data-type="livro"]::before { background: linear-gradient(180deg, var(--plum), transparent); }
+  .card[data-type="novela"]::before { background: linear-gradient(180deg, var(--coral), transparent); }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--rule2);
+    background: var(--card2);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .card-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 9px;
+    border-radius: 99px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+
+  .card[data-type="filme"] .card-type-badge { background: var(--gold-bg); color: var(--gold); border-color: rgba(240,192,96,0.2); }
+  .card[data-type="serie"] .card-type-badge { background: var(--mint-bg); color: var(--mint); border-color: rgba(95,212,164,0.2); }
+  .card[data-type="livro"] .card-type-badge { background: var(--plum-bg); color: var(--plum); border-color: rgba(200,127,204,0.2); }
+  .card[data-type="novela"] .card-type-badge { background: var(--coral-bg); color: var(--coral); border-color: rgba(232,112,90,0.2); }
+
+  .card-actions {
+    display: flex;
+    gap: 5px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(2px);
+  }
+
+  .card:hover .card-actions {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--rule);
+    background: rgba(255,255,255,0.03);
+    border-radius: 7px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--smoke);
+    transition: all 0.18s cubic-bezier(0.34,1.3,0.64,1);
+    backdrop-filter: blur(4px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .icon-btn svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 1.75;
+    transition: transform 0.18s cubic-bezier(0.34,1.3,0.64,1);
+    flex-shrink: 0;
+  }
+
+  .icon-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    border-color: var(--rule2);
+  }
+
+  .icon-btn:active {
+    transform: scale(0.92);
+  }
+
+  .icon-btn.edit:hover {
+    color: var(--gold);
+    background: var(--gold-bg);
+    border-color: rgba(240,192,96,0.3);
+    box-shadow: 0 4px 14px rgba(240,192,96,0.15);
+  }
+
+  .icon-btn.edit:hover svg { transform: rotate(-8deg) scale(1.1); }
+
+  .icon-btn.conclude:hover {
+    color: var(--mint);
+    background: var(--mint-bg);
+    border-color: rgba(95,212,164,0.3);
+    box-shadow: 0 4px 14px rgba(95,212,164,0.15);
+  }
+
+  .icon-btn.conclude:hover svg { transform: scale(1.15); }
+
+  .icon-btn.delete:hover {
+    color: var(--coral);
+    background: var(--coral-bg);
+    border-color: rgba(232,112,90,0.3);
+    box-shadow: 0 4px 14px rgba(232,112,90,0.15);
+  }
+
+  .icon-btn.delete:hover svg { transform: translateY(1px) scale(1.1); }
+
+  .icon-btn.restore:hover {
+    color: var(--plum);
+    background: var(--plum-bg);
+    border-color: rgba(200,127,204,0.3);
+    box-shadow: 0 4px 14px rgba(200,127,204,0.15);
+  }
+
+  .icon-btn.restore:hover svg { transform: rotate(-45deg) scale(1.1); }
+
+  .card-cover-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 6;
+    border-radius: calc(var(--r) - 4px);
+    margin-bottom: 14px;
+    overflow: hidden;
+    background: var(--card2);
+  }
+
+  .card-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .card:hover .card-cover { transform: scale(1.03); }
+
+  .cover-preview {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: var(--r-sm);
+    margin-top: 8px;
+    display: none;
+    border: 1px solid var(--rule);
+  }
+  .cover-preview.show { display: block; }
+
+  .card-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    color: var(--cream);
+    letter-spacing: -0.2px;
+  }
+
+  .card-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+    margin-bottom: 14px;
+    letter-spacing: 0.05em;
+  }
+
+  .card-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--ash);
+    margin-top: 10px;
+    text-align: right;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── STATUS TAG ── */
+  .status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border-radius: 99px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-left: 6px;
+  }
+
+  .status-assistindo { background: rgba(95,212,164,0.12); color: var(--mint); }
+  .status-pausado { background: rgba(240,192,96,0.12); color: var(--gold); }
+  .status-concluido { background: rgba(255,255,255,0.06); color: var(--dim); }
+
+  .status-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-assistindo .status-dot { background: var(--mint); box-shadow: 0 0 6px var(--mint); }
+  .status-pausado .status-dot { background: var(--gold); }
+  .status-concluido .status-dot { background: var(--dim); }
+
+  /* ── CONCLUÍDO ── */
+  .tab-btn[data-tab="concluido"].active { border-bottom-color: var(--mint); color: var(--mint); }
+
+  /* ── EXCLUÍDO ── */
+  .tab-btn[data-tab="excluido"].active { border-bottom-color: var(--coral); color: var(--coral); }
+
+  .excluido-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 99px;
+    background: var(--coral-bg);
+    color: var(--coral);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    margin-left: 3px;
+    transition: all 0.2s;
+    border: 1px solid rgba(232,112,90,0.2);
+  }
+
+  .excluido-badge:empty { display: none; }
+
+  .card.is-excluido {
+    opacity: 0.5;
+    filter: saturate(0.4) grayscale(0.3);
+  }
+
+  .card.is-excluido .card-title {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255,255,255,0.2);
+  }
+
+  .icon-btn.perma-delete:hover {
+    color: var(--coral);
+    background: var(--coral-bg);
+    border-color: rgba(232,112,90,0.3);
+    box-shadow: 0 4px 14px rgba(232,112,90,0.15);
+  }
+
+  .icon-btn.perma-delete:hover svg { transform: translateY(1px) scale(1.1); }
+
+  .concluido-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 99px;
+    background: var(--mint-bg);
+    color: var(--mint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    margin-left: 3px;
+    transition: all 0.2s;
+    border: 1px solid rgba(95,212,164,0.2);
+  }
+
+  .concluido-badge:empty { display: none; }
+
+  .card.is-concluido {
+    opacity: 0.65;
+    filter: saturate(0.7);
+  }
+
+  .card.is-concluido::before {
+    background: linear-gradient(180deg, var(--mint), transparent) !important;
+  }
+
+  .card.is-concluido .card-title {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255,255,255,0.2);
+  }
+
+  .concluido-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--mint-bg);
+    color: var(--mint);
+    font-size: 0.75rem;
+    border: 1px solid rgba(95,212,164,0.25);
+    animation: checkPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    margin-left: 6px;
+  }
+
+  @keyframes checkPop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    70%  { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 100px 40px;
+    color: var(--smoke);
+  }
+
+  .empty-state .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    opacity: 0.3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .empty-state .empty-icon svg { display: block; }
+
+  .empty-state h3 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--cream);
+    opacity: 0.4;
+    margin-bottom: 8px;
+  }
+
+  .empty-state p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    max-width: 240px;
+    margin: 0 auto;
+    letter-spacing: 0.04em;
+    line-height: 1.7;
+  }
+
+  /* ── MODAL ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--paper);
+    border: 1px solid var(--rule2);
+    border-radius: 18px;
+    padding: 36px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+    transform: translateY(24px) scale(0.97);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .overlay.open .modal {
+    transform: translateY(0) scale(1);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .modal-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--cream);
+    letter-spacing: -0.5px;
+  }
+
+  .modal-close {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: var(--card);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--dim);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    border: 1px solid var(--rule);
+  }
+
+  .modal-close:hover { color: var(--cream); background: var(--card2); }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-sm);
+    padding: 11px 14px;
+    color: var(--cream);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(95,212,164,0.35);
+    background: var(--card2);
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
+
+  select option { background: var(--card2); color: var(--cream); }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .type-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+  }
+
+  .type-option {
+    position: relative;
+  }
+
+  .type-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .type-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 6px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--card);
+    color: var(--dim);
+    margin-bottom: 0;
+  }
+
+  .type-option label:hover { border-color: var(--rule2); color: var(--cream); }
+
+  .type-option label .type-emoji { font-size: 1.3rem; display: flex; align-items: center; justify-content: center; }
+  .type-option label .type-emoji svg { display: block; }
+
+  .type-option input[type="radio"]:checked + label[for="type-filme"] {
+    border-color: var(--gold); background: var(--gold-bg); color: var(--gold);
+  }
+  .type-option input[type="radio"]:checked + label[for="type-serie"] {
+    border-color: var(--mint); background: var(--mint-bg); color: var(--mint);
+  }
+  .type-option input[type="radio"]:checked + label[for="type-livro"] {
+    border-color: var(--plum); background: var(--plum-bg); color: var(--plum);
+  }
+  .type-option input[type="radio"]:checked + label[for="type-novela"] {
+    border-color: var(--coral); background: var(--coral-bg); color: var(--coral);
+  }
+
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel {
+    padding: 10px 20px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--dim);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-cancel:hover { color: var(--cream); border-color: var(--rule2); }
+
+  .btn-save {
+    padding: 10px 26px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--mint);
+    background: var(--mint-bg);
+    color: var(--mint);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-save:hover {
+    background: var(--mint);
+    color: var(--ink);
+    box-shadow: 0 6px 20px rgba(95,212,164,0.25);
+  }
+
+  /* ── PROGRESS ── */
+  .progress-section { margin-bottom: 14px; }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .progress-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--cream);
+  }
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--card2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .card[data-type="filme"] .progress-bar { background: var(--gold); }
+  .card[data-type="serie"] .progress-bar { background: var(--mint); }
+  .card[data-type="livro"] .progress-bar { background: var(--plum); }
+  .card[data-type="novela"] .progress-bar { background: var(--coral); }
+
+  /* ── BOOKMARK ROW ── */
+  .bookmark-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 11px;
+    background: var(--card2);
+    border-radius: var(--r-sm);
+    border: 1px solid var(--rule);
+  }
+  .bookmark-icon { font-size: 0.95rem; flex-shrink: 0; display: flex; align-items: center; }
+  .bookmark-icon svg { display: block; }
+  .card[data-type="filme"] .bookmark-icon { color: var(--gold); }
+  .card[data-type="serie"] .bookmark-icon { color: var(--mint); }
+  .card[data-type="livro"] .bookmark-icon { color: var(--plum); }
+  .card[data-type="novela"] .bookmark-icon { color: var(--coral); }
+  .bookmark-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--cream);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── REORDER MODE ── */
+  .btn-reorder {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--rule2);
+    background: transparent;
+    color: var(--dim);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .btn-reorder:hover {
+    border-color: var(--plum);
+    color: var(--plum);
+    background: var(--plum-bg);
+  }
+
+  .btn-reorder.active {
+    border-color: var(--plum);
+    background: var(--plum-bg);
+    color: var(--plum);
+    box-shadow: 0 0 0 3px rgba(200,127,204,0.15);
+  }
+
+  .reorder-banner {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--plum-bg);
+    border: 1px solid rgba(200,127,204,0.25);
+    border-radius: var(--r-sm);
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--plum);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .reorder-banner.visible { display: flex; }
+
+  .reorder-banner svg { flex-shrink: 0; }
+
+  /* ── REORDER ARROWS ── */
+  .reorder-arrows {
+    display: none;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .reorder-mode .reorder-arrows { display: flex; }
+
+  .arrow-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(200,127,204,0.35);
+    background: var(--plum-bg);
+    border-radius: 7px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--plum);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .arrow-btn:hover { background: rgba(200,127,204,0.22); border-color: var(--plum); }
+  .arrow-btn:active { transform: scale(0.91); }
+  .arrow-btn[disabled] { opacity: 0.2; cursor: default; pointer-events: none; }
+
+  .reorder-mode .card { border-color: rgba(200,127,204,0.2); }
+  .reorder-mode .card:hover { transform: none; box-shadow: none; }
+
+  /* In reorder mode, hide card actions to avoid confusion */
+  .reorder-mode .card-actions { opacity: 0 !important; pointer-events: none !important; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    header { padding: 24px 20px; }
+    main { padding: 24px 20px 60px; }
+    /* Modal vira bottom sheet no mobile */
+    .overlay {
+      align-items: flex-end;
+      padding: 0;
+    }
+    .modal {
+      padding: 24px 20px 32px;
+      border-radius: 20px 20px 0 0;
+      max-width: 100%;
+      width: 100%;
+      max-height: 92dvh;
+      overflow-y: auto;
+      transform: translateY(100%);
+    }
+    .overlay.open .modal {
+      transform: translateY(0);
+    }
+    .form-row { grid-template-columns: 1fr; }
+    .header-stats { gap: 0; }
+    .type-selector { grid-template-columns: repeat(2, 1fr); }
+    .stat { padding: 10px 14px; }
+
+    /* Oculta tabs de categoria (Filmes, Séries, Livros, Novelas) no mobile */
+    .tab-category { display: none; }
+
+    /* Distribui os 3 tabs restantes igualmente sem rolagem lateral */
+    .tabs { overflow-x: visible; }
+    .tab-btn {
+      flex: 1;
+      justify-content: center;
+      padding: 10px 4px;
+      font-size: 0.68rem;
+      gap: 4px;
+      letter-spacing: 0.03em;
+    }
+    .tab-icon { font-size: 0.8rem; }
+
+    /* No mobile, os ícones são controlados por toggle de toque */
+    .card .card-actions {
+      opacity: 0;
+      transform: translateY(2px);
+      pointer-events: none;
+    }
+    .card:hover .card-actions {
+      opacity: 0;
+      transform: translateY(2px);
+      pointer-events: none;
+    }
+    .card.actions-open .card-actions {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+
+    /* No mobile, btn-reorder fica sempre aceso em roxo */
+    .btn-reorder {
+      border-color: var(--plum);
+      background: var(--plum-bg);
+      color: var(--plum);
+      box-shadow: 0 0 0 3px rgba(200,127,204,0.15);
+    }
+
+    /* No mobile, remove hover dos botoes pix */
+    .pix-copy-inline:hover {
+      color: inherit !important;
+      background: transparent !important;
+    }
+  }
+
+  /* ── HOME SCREEN ── */
+  #home-screen {
+    position: fixed; inset: 0; background: var(--ink); z-index: 500;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 24px; transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  #home-screen.hidden { opacity: 0; pointer-events: none; transform: scale(0.97); }
+  .home-brand { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 40px; }
+  .home-brand-name { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 2.4rem; font-weight: 400; letter-spacing: -1px; color: var(--cream); line-height: 1; }
+  .home-brand-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--smoke); letter-spacing: 0.2em; text-transform: uppercase; }
+  .home-cards { display: flex; gap: 14px; width: 100%; max-width: 520px; justify-content: center; flex-wrap: wrap; }
+  .home-card { flex: 1; min-width: 200px; max-width: 240px; background: var(--card); border: 1px solid var(--rule); border-radius: 16px; padding: 22px 20px; cursor: pointer; transition: all 0.28s cubic-bezier(0.34,1.2,0.64,1); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; }
+  .home-card::before { content: ''; position: absolute; inset: 0; opacity: 1; border-radius: 16px; pointer-events: none; }
+  .home-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .home-card:active { transform: translateY(-2px) scale(0.98); }
+  .home-card.card-marcador { border-color: rgba(95,212,164,0.18); }
+  .home-card.card-marcador::before { background: radial-gradient(ellipse at top left, rgba(95,212,164,0.07), transparent 70%); }
+  .home-card.card-marcador:hover { border-color: rgba(95,212,164,0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(95,212,164,0.08); }
+  .home-card.card-pix { border-color: rgba(240,192,96,0.18); }
+  .home-card.card-pix::before { background: radial-gradient(ellipse at top left, rgba(240,192,96,0.07), transparent 70%); }
+  .home-card.card-pix:hover { border-color: rgba(240,192,96,0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(240,192,96,0.08); }
+  .home-card.card-unitv { border-color: rgba(200,127,204,0.18); }
+  .home-card.card-unitv::before { background: radial-gradient(ellipse at top left, rgba(200,127,204,0.07), transparent 70%); }
+  .home-card.card-unitv:hover { border-color: rgba(200,127,204,0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(200,127,204,0.08); }
+  .card-unitv .home-card-icon { background: var(--plum-bg); color: var(--plum); border: 1px solid rgba(200,127,204,0.2); }
+  .card-unitv .home-card-arrow { color: var(--plum); }
+  .home-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-marcador .home-card-icon { background: var(--mint-bg); color: var(--mint); border: 1px solid rgba(95,212,164,0.2); }
+  .card-pix .home-card-icon { background: var(--gold-bg); color: var(--gold); border: 1px solid rgba(240,192,96,0.2); }
+  .home-card-label { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 1.7rem; font-weight: 400; color: var(--cream); letter-spacing: -0.3px; line-height: 1.1; }
+  .home-card-desc { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; color: var(--smoke); letter-spacing: 0.06em; line-height: 1.7; text-transform: uppercase; }
+  .home-card-arrow { margin-top: auto; display: flex; align-items: center; gap: 5px; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; transition: gap 0.2s; }
+  .card-marcador .home-card-arrow { color: var(--mint); }
+  .card-pix .home-card-arrow { color: var(--gold); }
+  .home-card:hover .home-card-arrow { gap: 8px; }
+  .btn-back { display: flex; align-items: center; gap: 7px; background: transparent; border: 1px solid var(--rule); border-radius: var(--r-sm); color: var(--dim); font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 8px 16px; cursor: pointer; transition: all 0.18s; }
+  .btn-back:hover { color: var(--cream); border-color: var(--rule2); }
+  #app-wrapper { display: none; opacity: 0; transition: opacity 0.35s ease; }
+  #app-wrapper.visible { display: block; opacity: 1; }
+  #pix-wrapper { display: none; opacity: 0; transition: opacity 0.35s ease; min-height: 100vh; flex-direction: column; }
+  #pix-wrapper.visible { display: flex; opacity: 1; }
+  .pix-content { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 80vh; gap: 0; padding: 48px 24px 80px; }
+  .pix-icon-wrap { width: 72px; height: 72px; border-radius: 18px; background: var(--gold-bg); border: 1px solid rgba(240,192,96,0.2); display: flex; align-items: center; justify-content: center; color: var(--gold); margin-bottom: 16px; }
+  .pix-title { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 2.4rem; color: var(--cream); letter-spacing: -0.5px; margin-bottom: 6px; }
+  .pix-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--smoke); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 40px; }
+  .pix-header { padding: 24px 48px; border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 16px; }
+
+  /* PIX form card */
+  .pix-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .pix-field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--dim);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .pix-type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+    margin-bottom: 4px;
+  }
+
+  .pix-type-opt { position: relative; }
+  .pix-type-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .pix-type-opt label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 6px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--card);
+    color: var(--dim);
+    margin-bottom: 0;
+  }
+  .pix-type-opt label:hover { border-color: var(--rule2); color: var(--cream); }
+  .pix-type-opt input[type="radio"]:checked + label {
+    border-color: var(--gold);
+    background: var(--gold-bg);
+    color: var(--gold);
+  }
+  .pix-type-opt .type-icon { font-size: 1.1rem; }
+
+  .pix-input-wrap { position: relative; }
+  .pix-input-wrap input {
+    width: 100%;
+    background: var(--card2);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-sm);
+    padding: 12px 48px 12px 14px;
+    color: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .pix-input-wrap input:focus { border-color: rgba(240,192,96,0.4); background: var(--card2); }
+  .pix-input-wrap input::placeholder { color: var(--ash); font-size: 0.8rem; }
+
+  .pix-copy-inline {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--ash);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.18s;
+  }
+  .pix-copy-inline:hover { color: var(--gold); background: var(--gold-bg); }
+
+  .pix-btn-save {
+    padding: 12px 28px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--gold);
+    background: var(--gold-bg);
+    color: var(--gold);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    width: 100%;
+  }
+  .pix-btn-save:hover {
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: 0 6px 20px rgba(240,192,96,0.25);
+  }
+
+  .pix-saved-box {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--gold-bg);
+    border: 1px solid rgba(240,192,96,0.25);
+    border-radius: var(--r-sm);
+    animation: fadeUp 0.3s ease both;
+  }
+  .pix-saved-box.show { display: flex; }
+  .pix-saved-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--gold);
+    flex: 1;
+    word-break: break-all;
+    letter-spacing: 0.03em;
+  }
+  .pix-saved-type-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--smoke);
+    padding: 3px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .pix-toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--card2);
+    border: 1px solid var(--rule2);
+    border-radius: var(--r-sm);
+    padding: 10px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0;
+    transition: all 0.25s ease;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  .pix-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  #unitv-wrapper { display: none; opacity: 0; transition: opacity 0.35s ease; min-height: 100vh; flex-direction: column; }
+  #unitv-wrapper.visible { display: flex; opacity: 1; }
+  .unitv-header { padding: 24px 48px; border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 16px; }
+  .unitv-content { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 80vh; gap: 0; padding: 48px 24px 80px; }
+  .unitv-icon-wrap { width: 72px; height: 72px; border-radius: 18px; background: var(--plum-bg); border: 1px solid rgba(200,127,204,0.2); display: flex; align-items: center; justify-content: center; color: var(--plum); margin-bottom: 16px; }
+  .unitv-title { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 2.4rem; color: var(--cream); letter-spacing: -0.5px; margin-bottom: 28px; }
+  .unitv-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--smoke); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 40px; }
+  .unitv-card { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--r); padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+  .unitv-field-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--dim); margin-bottom: 8px; display: block; }
+  .unitv-btn-submit { padding: 13px 28px; border-radius: var(--r-sm); border: 1px solid var(--plum); background: var(--plum-bg); color: var(--plum); font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.18s; text-transform: uppercase; letter-spacing: 0.06em; width: 100%; }
+  .unitv-btn-submit:hover { background: var(--plum); color: var(--ink); box-shadow: 0 6px 20px rgba(200,127,204,0.25); }
+  .unitv-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--card2); border: 1px solid var(--rule2); border-radius: var(--r-sm); padding: 10px 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--plum); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0; transition: all 0.25s ease; pointer-events: none; z-index: 9999; white-space: nowrap; }
+  .unitv-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .unitv-ticket-list { width: 100%; max-width: 520px; margin-top: 28px; display: flex; flex-direction: column; gap: 10px; }
+  .unitv-ticket-item { background: var(--card); border: 1px solid var(--rule); border-radius: var(--r-sm); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.3s ease both; position: relative; overflow: hidden; }
+  .unitv-ticket-item::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; border-radius: var(--r-sm) 0 0 var(--r-sm); }
+  .unitv-ticket-item[data-priority="alta"]::before { background: var(--coral); }
+  .unitv-ticket-item[data-priority="media"]::before { background: var(--gold); }
+  .unitv-ticket-item[data-priority="baixa"]::before { background: var(--mint); }
+  .unitv-ticket-title { font-family: 'Instrument Serif', serif; font-size: 1.05rem; color: var(--cream); letter-spacing: -0.2px; }
+  .unitv-ticket-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .unitv-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.08em; border-radius: 99px; padding: 2px 8px; border: 1px solid; }
+  .unitv-badge-aberto { background: var(--mint-bg); color: var(--mint); border-color: rgba(95,212,164,0.25); }
+  .unitv-badge-andamento { background: var(--gold-bg); color: var(--gold); border-color: rgba(240,192,96,0.25); }
+  .unitv-badge-resolvido { background: rgba(255,255,255,0.05); color: var(--dim); border-color: var(--rule); }
+  .unitv-badge-alta { background: var(--coral-bg); color: var(--coral); border-color: rgba(232,112,90,0.25); }
+  .unitv-badge-media { background: var(--gold-bg); color: var(--gold); border-color: rgba(240,192,96,0.25); }
+  .unitv-badge-baixa { background: var(--mint-bg); color: var(--mint); border-color: rgba(95,212,164,0.25); }
+  .unitv-ticket-desc { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--dim); line-height: 1.6; }
+  .unitv-ticket-date { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; color: var(--ash); text-align: right; letter-spacing: 0.06em; }
+  .unitv-ticket-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .unitv-action-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--rule); background: transparent; color: var(--dim); cursor: pointer; transition: all 0.15s; }
+  .unitv-action-btn.resolve:hover { color: var(--mint); border-color: rgba(95,212,164,0.4); background: var(--mint-bg); }
+  .unitv-action-btn.delete:hover { color: var(--coral); border-color: rgba(232,112,90,0.4); background: var(--coral-bg); }
+  @media (max-width: 540px) { .unitv-header { padding: 24px 20px; } .unitv-content { padding: 32px 16px 60px; } .unitv-card { padding: 20px; } }
+
+  /* ── PASTA DOWNLOADS (UniTV) ── */
+  .unitv-folder { cursor: pointer; padding: 16px 18px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--r); display: flex; align-items: center; transition: all 0.2s; user-select: none; }
+  .unitv-folder:hover { border-color: rgba(200,127,204,0.4); background: var(--card2); }
+  .unitv-folder-header { display: flex; align-items: center; gap: 14px; width: 100%; }
+  .unitv-folder-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--plum-bg); border: 1px solid rgba(200,127,204,0.25); display: flex; align-items: center; justify-content: center; color: var(--plum); flex-shrink: 0; transition: transform 0.2s; }
+  .unitv-folder.open .unitv-folder-icon { transform: scale(1.04); }
+  .unitv-folder-info { flex: 1; min-width: 0; }
+  .unitv-folder-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; color: var(--cream); letter-spacing: 0.01em; }
+  .unitv-folder-count { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--smoke); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px; }
+  .unitv-folder-chevron { color: var(--dim); transition: transform 0.25s ease; flex-shrink: 0; }
+  .unitv-folder.open .unitv-folder-chevron { transform: rotate(180deg); color: var(--plum); }
+  .unitv-folder-body { max-height: 0; overflow: hidden; opacity: 0; display: flex; flex-direction: column; gap: 14px; transition: max-height 0.35s ease, opacity 0.25s ease; }
+  .unitv-folder-body.open { max-height: 3000px; opacity: 1; margin-top: 14px; }
+
+  /* ── SELEÇÃO DE PLATAFORMA (UniTV) ── */
+  .unitv-select-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 480px; margin-bottom: 22px; }
+  .unitv-select-item { aspect-ratio: 1; background: var(--card); border: 1px solid var(--rule); border-radius: var(--r-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; cursor: pointer; transition: all 0.2s; padding: 10px; }
+  .unitv-select-item:hover { border-color: rgba(200,127,204,0.35); background: var(--card2); }
+  .unitv-select-item.active { border-color: var(--plum); background: var(--plum-bg); box-shadow: 0 0 0 1px rgba(200,127,204,0.15) inset; }
+  .unitv-select-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: center; color: var(--dim); transition: all 0.2s; }
+  .unitv-select-item.active .unitv-select-icon { color: var(--plum); background: rgba(200,127,204,0.16); }
+  .unitv-select-label { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); text-align: center; }
+  .unitv-select-item.active .unitv-select-label { color: var(--cream); }
+  @media (max-width: 400px) { .unitv-select-grid { gap: 8px; } .unitv-select-label { font-size: 0.78rem; } }
+  .unitv-select-item.add-new { border-style: dashed; border-color: var(--rule2); }
+  .unitv-select-item.add-new .unitv-select-icon { color: var(--dim); background: transparent; }
+  .unitv-select-item.add-new .unitv-select-label { color: var(--smoke); }
+  .unitv-select-item.add-new:hover { border-color: var(--mint); background: var(--mint-bg); }
+  .unitv-select-item.add-new:hover .unitv-select-icon { color: var(--mint); }
+  .unitv-select-item.add-new:hover .unitv-select-label { color: var(--mint); }
+  @media (max-width: 540px) {
+    .home-cards { flex-direction: column; align-items: center; }
+    .home-card { max-width: 100%; min-width: unset; width: 100%; }
+    .home-brand-name { font-size: 2rem; }
+    .home-brand { margin-bottom: 32px; }
+    .pix-header { padding: 24px 20px; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="home-screen">
+  <div class="home-brand">
+    <span class="home-brand-name">Adson</span>
+    <span class="home-brand-sub">Escolha uma secao</span>
+  </div>
+  <div class="home-cards">
+    <div class="home-card card-marcador" onclick="goTo('marcador')">
+      <div class="home-card-label">Marcador</div>
+      <div class="home-card-desc">Filmes &middot; Series &middot; Livros<br>Marque onde voce parou</div>
+      <div class="home-card-arrow">Acessar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </div>
+    <div class="home-card card-pix" onclick="goTo('pix')">
+      <div class="home-card-label">Chave Pix</div>
+      <div class="home-card-desc">Pagamentos &middot; Transferencias<br>Sua chave Pix aqui</div>
+      <div class="home-card-arrow">Acessar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </div>
+    <div class="home-card card-unitv" onclick="goTo('unitv')">
+      <div class="home-card-label">UniTV</div>
+      <div class="home-card-desc">Suporte &middot; Chamados<br>Abra e acompanhe tickets</div>
+      <div class="home-card-arrow">Acessar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </div>
+  </div>
+</div>
+<!-- APP WRAPPER -->
+<div id="app-wrapper">
+<header>
+  <button class="btn-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Inicio
+    </button>
+  <div class="brand">
+    <span class="brand-name">Marcador</span>
+    <span class="brand-sub">Seu progresso, sua história</span>
+  </div>
+  <div class="header-stats">
+    <div class="stat stat-film">
+      <div class="stat-num" id="count-filme">0</div>
+      <div class="stat-label">Filmes</div>
+    </div>
+    <div class="stat stat-series">
+      <div class="stat-num" id="count-serie">0</div>
+      <div class="stat-label">Séries</div>
+    </div>
+    <div class="stat stat-book">
+      <div class="stat-num" id="count-livro">0</div>
+      <div class="stat-label">Livros</div>
+    </div>
+    <div class="stat stat-novela">
+      <div class="stat-num" id="count-novela">0</div>
+      <div class="stat-label">Novelas</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="all">
+      Todos
+    </button>
+    <button class="tab-btn tab-category" data-tab="filme">
+      Filmes
+    </button>
+    <button class="tab-btn tab-category" data-tab="serie">
+      Séries
+    </button>
+    <button class="tab-btn tab-category" data-tab="livro">
+      Livros
+    </button>
+    <button class="tab-btn tab-category" data-tab="novela">
+      Novelas
+    </button>
+    <button class="tab-btn" data-tab="concluido">
+      Concluídos <span class="concluido-badge" id="concluido-badge"></span>
+    </button>
+    <button class="tab-btn" data-tab="excluido">
+      Excluídos <span class="excluido-badge" id="excluido-badge"></span>
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+      <input type="text" id="search-input" placeholder="Buscar...">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-reorder" id="btn-reorder" onclick="toggleReorderMode()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><path d="M3 9h18M3 15h18"/><path d="M8 5l-5 4 5 4"/><path d="M16 19l5-4-5-4"/></svg> Reordenar
+      </button>
+      <button class="btn-add" onclick="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Adicionar
+      </button>
+    </div>
+  </div>
+
+  <div class="reorder-banner" id="reorder-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+    Use as setas nos cards para reorganizar — a ordem é salva automaticamente
+  </div>
+
+  <div class="grid" id="cards-grid"></div>
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title-text">Novo item</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label>Tipo</label>
+      <div class="type-selector">
+        <div class="type-option">
+          <input type="radio" id="type-filme" name="type" value="filme" checked>
+          <label for="type-filme"><span class="type-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/><path d="M2 16h20"/><path d="M7 4v4"/><path d="M17 4v4"/><path d="M7 16v4"/><path d="M17 16v4"/></svg></span>Filme</label>
+        </div>
+        <div class="type-option">
+          <input type="radio" id="type-serie" name="type" value="serie">
+          <label for="type-serie"><span class="type-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span>Série</label>
+        </div>
+        <div class="type-option">
+          <input type="radio" id="type-livro" name="type" value="livro">
+          <label for="type-livro"><span class="type-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Livro</label>
+        </div>
+        <div class="type-option">
+          <input type="radio" id="type-novela" name="type" value="novela">
+          <label for="type-novela"><span class="type-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>Novela</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="f-title">Título</label>
+      <input type="text" id="f-title" placeholder="Nome do filme, série ou livro...">
+    </div>
+
+    <div class="form-group">
+      <label for="f-cover">Link da capa (URL)</label>
+      <input type="url" id="f-cover" placeholder="https://..." oninput="previewCover(this.value)">
+      <img id="cover-preview" class="cover-preview" alt="Pré-visualização da capa">
+    </div>
+
+    <div class="form-group" id="page-row">
+      <label for="f-page">Página</label>
+      <input type="number" id="f-page" min="1" max="99999" placeholder="Ex: 142">
+    </div>
+
+    <div class="form-row" id="time-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label for="f-minute">Minuto</label>
+        <input type="number" id="f-minute" min="0" max="999" placeholder="Ex: 47">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label for="f-second">Segundo</label>
+        <input type="number" id="f-second" min="0" max="59" placeholder="Ex: 32">
+      </div>
+    </div>
+
+    <div class="form-row" id="season-row">
+      <div class="form-group" id="season-field" style="margin-bottom:0">
+        <label for="f-season">Temporada</label>
+        <input type="number" id="f-season" min="1" max="99" placeholder="Ex: 2">
+      </div>
+      <div class="form-group" id="episode-field" style="margin-bottom:0">
+        <label for="f-episode">Episódio</label>
+        <input type="number" id="f-episode" min="1" max="999" placeholder="Ex: 5">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="f-status">Status</label>
+      <select id="f-status">
+        <option value="assistindo" id="opt-assistindo">Assistindo</option>
+        <option value="concluido">Concluído</option>
+      </select>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveItem()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // ── FIREBASE CONFIG ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyDI1pQclxhXbaeUL7Bxr-5GJYHaMiXkP3A",
+    authDomain: "adson-tech.firebaseapp.com",
+    databaseURL: "https://adson-tech-default-rtdb.firebaseio.com",
+    projectId: "adson-tech",
+    storageBucket: "adson-tech.firebasestorage.app",
+    messagingSenderId: "668050173994",
+    appId: "1:668050173994:web:8eae8af01d7ff9fb455353"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const itemsRef = ref(db, 'marcador/items');
+
+  // Expõe db e funções Firebase para o script do Pix
+  window._fbDb = db;
+  window._fbRef = ref;
+  window._fbSet = set;
+  window._fbUpdate = update;
+  window._fbRemove = remove;
+  window._fbOnValue = onValue;
+
+  // ── STATE ──
+  let items = [];
+  let currentTab = 'all';
+  let editingId = null;
+  let searchQuery = '';
+
+  // ── LOADING INDICATOR ──
+  function setLoading(show) {
+    let indicator = document.getElementById('fb-loading');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'fb-loading';
+      indicator.style.cssText = `
+        position: fixed; top: 16px; right: 16px; z-index: 9999;
+        background: rgba(126,200,164,0.15); color: #7ec8a4;
+        border: 1px solid rgba(126,200,164,0.3);
+        padding: 8px 16px; border-radius: 99px;
+        font-family: 'DM Sans', sans-serif; font-size: 0.75rem;
+        font-weight: 500; letter-spacing: 0.05em;
+        transition: opacity 0.3s;
+      `;
+      document.body.appendChild(indicator);
+    }
+    if (show) {
+      indicator.textContent = '⟳ Sincronizando…';
+      indicator.style.opacity = '1';
+    } else {
+      indicator.textContent = '✓ Salvo';
+      setTimeout(() => { indicator.style.opacity = '0'; }, 1200);
+    }
+  }
+
+  // ── REALTIME LISTENER — carrega e escuta mudanças do Firebase ──
+  onValue(itemsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      // Firebase armazena como objeto; converte para array ordenado por updatedAt
+      items = Object.values(data).sort((a, b) => {
+        // If both have explicit order, use it
+        if (a.order != null && b.order != null) return a.order - b.order;
+        // Items with order come first
+        if (a.order != null) return -1;
+        if (b.order != null) return 1;
+        // Fallback: most recent first
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+    } else {
+      items = [];
+    }
+    render();
+    updateStats();
+  });
+
+  // ── TABS ──
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      render();
+    });
+  });
+
+  // ── SEARCH ──
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value.toLowerCase();
+    render();
+  });
+
+  // ── SHOW/HIDE FIELDS BY TYPE ──
+  function updateFieldVisibility() {
+    const type = document.querySelector('input[name="type"]:checked')?.value;
+    const seasonRow = document.getElementById('season-row');
+    const timeRow = document.getElementById('time-row');
+    seasonRow.style.display = (type === 'serie' || type === 'novela') ? '' : 'none';
+    timeRow.style.display = type === 'livro' ? 'none' : '';
+    const seasonField = document.getElementById('season-field');
+    if (seasonField) seasonField.style.display = type === 'novela' ? 'none' : '';
+    const episodeField = document.getElementById('episode-field');
+    if (episodeField) episodeField.style.gridColumn = type === 'novela' ? '1 / -1' : '';
+    const pageRow = document.getElementById('page-row');
+    if (pageRow) pageRow.style.display = type === 'livro' ? '' : 'none';
+    const optAssistindo = document.getElementById('opt-assistindo');
+    if (optAssistindo) optAssistindo.textContent = type === 'livro' ? '▶ Lendo' : '▶ Assistindo';
+  }
+
+  document.querySelectorAll('input[name="type"]').forEach(r =>
+    r.addEventListener('change', updateFieldVisibility)
+  );
+
+  // ── MODAL ──
+  window.openModal = function(id = null) {
+    editingId = id;
+    document.getElementById('modal-title-text').textContent = id ? 'Editar item' : 'Novo item';
+
+    if (id) {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+      document.querySelector(`input[name="type"][value="${item.type}"]`).checked = true;
+      document.getElementById('f-title').value = item.title;
+      document.getElementById('f-cover').value = item.cover || '';
+      previewCover(item.cover || '');
+      document.getElementById('f-minute').value = item.minute ?? '';
+      document.getElementById('f-second').value = item.second ?? '';
+      document.getElementById('f-season').value = item.season ?? '';
+      document.getElementById('f-episode').value = item.episode ?? '';
+      document.getElementById('f-page').value = item.page ?? '';
+      document.getElementById('f-status').value = item.status || 'assistindo';
+    } else {
+      document.querySelector('input[name="type"][value="filme"]').checked = true;
+      document.getElementById('f-title').value = '';
+      document.getElementById('f-cover').value = '';
+      previewCover('');
+      document.getElementById('f-minute').value = '';
+      document.getElementById('f-second').value = '';
+      document.getElementById('f-season').value = '';
+      document.getElementById('f-episode').value = '';
+      document.getElementById('f-page').value = '';
+      document.getElementById('f-status').value = 'assistindo';
+    }
+
+    updateFieldVisibility();
+    document.getElementById('overlay').classList.add('open');
+    if (!window.matchMedia('(max-width: 640px)').matches) {
+      setTimeout(() => document.getElementById('f-title').focus(), 300);
+    }
+  }
+
+  window.previewCover = function(url) {
+    const img = document.getElementById('cover-preview');
+    if (url && url.startsWith('http')) {
+      img.src = url;
+      img.classList.add('show');
+      img.onerror = () => img.classList.remove('show');
+    } else {
+      img.classList.remove('show');
+      img.src = '';
+    }
+  }
+
+  window.closeModal = function() {
+    document.getElementById('overlay').classList.remove('open');
+    editingId = null;
+  }
+
+  window.handleOverlayClick = function(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  // ── SAVE → Firebase ──
+  window.saveItem = async function() {
+    const title = document.getElementById('f-title').value.trim();
+    if (!title) {
+      document.getElementById('f-title').style.borderColor = '#e05c5c';
+      document.getElementById('f-title').focus();
+      setTimeout(() => document.getElementById('f-title').style.borderColor = '', 1500);
+      return;
+    }
+
+    const type = document.querySelector('input[name="type"]:checked').value;
+    const minute = document.getElementById('f-minute').value !== '' ? parseInt(document.getElementById('f-minute').value) : null;
+    const second = document.getElementById('f-second').value !== '' ? parseInt(document.getElementById('f-second').value) : null;
+    const season = document.getElementById('f-season').value !== '' ? parseInt(document.getElementById('f-season').value) : null;
+    const episode = document.getElementById('f-episode').value !== '' ? parseInt(document.getElementById('f-episode').value) : null;
+    const page = document.getElementById('f-page').value !== '' ? parseInt(document.getElementById('f-page').value) : null;
+    const cover = document.getElementById('f-cover').value.trim();
+    const id = editingId || Date.now().toString();
+
+    // Remove campos null para não poluir o banco
+    const data = { id, type, title, cover, status: document.getElementById('f-status').value,
+      updatedAt: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }),
+      createdAt: editingId ? (items.find(i => i.id === editingId)?.createdAt || Date.now()) : Date.now()
+    };
+    if (minute !== null) data.minute = minute;
+    if (second !== null) data.second = second;
+    if (season !== null) data.season = season;
+    if (episode !== null) data.episode = episode;
+    if (page !== null) data.page = page;
+
+    // Ao editar, joga o item para o primeiro lugar
+    if (editingId) {
+      const orders = items.filter(i => i.order != null).map(i => i.order);
+      const minOrder = orders.length ? Math.min(...orders) : 0;
+      data.order = minOrder - 1;
+    }
+
+    setLoading(true);
+    try {
+      await set(ref(db, `marcador/items/${id}`), data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao salvar:', err);
+      setLoading(false);
+    }
+
+    closeModal();
+  }
+
+  // ── CONCLUIR RÁPIDO → Firebase ──
+  window.concludeItem = async function(id, e) {
+    e.stopPropagation();
+    setLoading(true);
+    try {
+      await update(ref(db, `marcador/items/${id}`), {
+        status: 'concluido',
+        updatedAt: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao concluir:', err);
+      setLoading(false);
+    }
+  }
+
+  // ── RESTAURAR → Firebase ──
+  window.restoreItem = async function(id, e) {
+    e.stopPropagation();
+    setLoading(true);
+    try {
+      await update(ref(db, `marcador/items/${id}`), {
+        status: 'assistindo',
+        updatedAt: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao restaurar:', err);
+      setLoading(false);
+    }
+  }
+
+  // ── DELETE → soft delete (move to lixeira) ──
+  window.deleteItem = async function(id, e) {
+    e.stopPropagation();
+    if (!confirm('Mover para a lixeira?')) return;
+    setLoading(true);
+    try {
+      await update(ref(db, `marcador/items/${id}`), {
+        deleted: true,
+        deletedAt: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao excluir:', err);
+      setLoading(false);
+    }
+  }
+
+  // ── APAGAR PERMANENTEMENTE → Firebase ──
+  window.permaDeleteItem = async function(id, e) {
+    e.stopPropagation();
+    if (!confirm('Apagar permanentemente? Isso não pode ser desfeito.')) return;
+    setLoading(true);
+    try {
+      await remove(ref(db, `marcador/items/${id}`));
+      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao apagar:', err);
+      setLoading(false);
+    }
+  }
+
+  // ── RESTAURAR DA LIXEIRA → Firebase ──
+  window.restoreFromTrash = async function(id, e) {
+    e.stopPropagation();
+    setLoading(true);
+    try {
+      const item = items.find(i => i.id === id);
+      await update(ref(db, `marcador/items/${id}`), {
+        deleted: false,
+        deletedAt: null,
+        updatedAt: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao restaurar:', err);
+      setLoading(false);
+    }
+  }
+
+  // ── RENDER ──
+  // Extrai base do título (sem número final) e o número, para ordenar "Filme 1, Filme 2, Filme 3..."
+  function parseTitleNumber(title) {
+    const m = title.trim().match(/^(.*?)[\s._-]*(\d+)\s*$/);
+    if (m) {
+      return { base: m[1].trim().toLowerCase(), num: parseInt(m[2], 10) };
+    }
+    return { base: title.trim().toLowerCase(), num: null };
+  }
+
+  function naturalTitleSort(arr) {
+    return arr.slice().sort((a, b) => {
+      const pa = parseTitleNumber(a.title);
+      const pb = parseTitleNumber(b.title);
+      if (pa.base === pb.base && pa.num != null && pb.num != null) {
+        return pa.num - pb.num;
+      }
+      if (pa.base !== pb.base) return pa.base.localeCompare(pb.base);
+      return 0;
+    });
+  }
+
+  function render() {
+    const grid = document.getElementById('cards-grid');
+    let filtered = items;
+
+    const isConcludedTab = currentTab === 'concluido';
+    const isExcluidoTab = currentTab === 'excluido';
+
+    if (isExcluidoTab) {
+      filtered = filtered.filter(i => i.deleted === true);
+    } else if (isConcludedTab) {
+      filtered = filtered.filter(i => i.status === 'concluido' && !i.deleted);
+      filtered = naturalTitleSort(filtered);
+    } else {
+      filtered = filtered.filter(i => i.status !== 'concluido' && !i.deleted);
+      if (currentTab !== 'all') {
+        filtered = filtered.filter(i => i.type === currentTab);
+      }
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(i =>
+        i.title.toLowerCase().includes(searchQuery) ||
+        (i.notes && i.notes.toLowerCase().includes(searchQuery))
+      );
+    }
+
+    if (filtered.length === 0) {
+      const emojis = {
+        all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="28" height="28" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+        filme: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="28" height="28" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/><path d="M2 16h20"/><path d="M7 4v4"/><path d="M17 4v4"/><path d="M7 16v4"/><path d="M17 16v4"/></svg>',
+        serie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="28" height="28" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>',
+        livro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="28" height="28" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+        novela: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="28" height="28" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+        concluido: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="28" height="28" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        excluido: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="28" height="28" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
+      };
+      const labels = { all: 'Nada aqui ainda', filme: 'Nenhum filme', serie: 'Nenhuma série', livro: 'Nenhum livro', novela: 'Nenhuma novela', concluido: 'Nenhum concluído ainda', excluido: 'Lixeira vazia' };
+      const subs = { all: 'Adicione seu primeiro item e marque onde você parou.', filme: 'Adicione seu primeiro item e marque onde você parou.', serie: 'Adicione seu primeiro item e marque onde você parou.', livro: 'Adicione seu primeiro item e marque onde você parou.', novela: 'Adicione sua primeira novela e marque onde você parou.', concluido: 'Quando você concluir um item, ele aparecerá aqui.', excluido: 'Nenhum item foi excluído.' };
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">${emojis[currentTab]}</div>
+          <h3>${labels[currentTab]}</h3>
+          <p>${subs[currentTab]}</p>
+        </div>`;
+      return;
+    }
+
+    const typeEmoji = {
+      filme: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="11" height="11" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/><path d="M2 16h20"/><path d="M7 4v4"/><path d="M17 4v4"/><path d="M7 16v4"/><path d="M17 16v4"/></svg>',
+      serie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="11" height="11" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>',
+      livro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="11" height="11" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+      novela: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="11" height="11" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+    };
+    const typeName = { filme: 'Filme', serie: 'Série', livro: 'Livro', novela: 'Novela' };
+    const getStatusLabel = (status, type) => {
+      if (status === 'concluido') return 'Concluído';
+      return type === 'livro' ? 'Lendo' : 'Assistindo';
+    };
+    const statusDot = '<span class="status-dot"></span>';
+
+    grid.innerHTML = filtered.map((item, idx) => {
+
+      let timeParts = [];
+      if (item.type === 'serie' || item.type === 'novela') {
+        if (item.type === 'serie' && item.season != null) timeParts.push(`T${item.season}`);
+        if (item.episode != null) timeParts.push(`Ep. ${item.episode}`);
+      }
+      if (item.minute != null) {
+        const mm = String(item.minute).padStart(2, '0');
+        const ss = item.second != null ? ':' + String(item.second).padStart(2, '0') : ':00';
+        timeParts.push(mm + ss);
+      }
+      if (item.type === 'livro' && item.page != null) timeParts.push(`Pág. ${item.page}`);
+      const timeStr = timeParts.join(' · ');
+      const isConcluido = item.status === 'concluido';
+      const isExcluido = item.deleted === true;
+
+      return `
+      <div class="card${isConcluido ? ' is-concluido' : ''}${isExcluido ? ' is-excluido' : ''}" data-type="${item.type}" data-id="${item.id}" draggable="false" style="animation-delay:${idx * 0.04}s">
+        <div class="card-top">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="reorder-arrows">
+              <button class="arrow-btn" onclick="moveCard('${item.id}', -1, event)" title="Mover para cima" ${idx === 0 ? 'disabled' : ''}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+              </button>
+              <button class="arrow-btn" onclick="moveCard('${item.id}', 1, event)" title="Mover para baixo" ${idx === filtered.length - 1 ? 'disabled' : ''}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div>
+              <span class="card-type-badge">${typeEmoji[item.type]} ${typeName[item.type]}</span>
+              <span class="status-tag status-${item.status}">${statusDot}${getStatusLabel(item.status, item.type)}</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            ${isExcluido ? `
+              <button class="icon-btn restore" onclick="restoreFromTrash('${item.id}', event)" title="Restaurar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>
+              <button class="icon-btn perma-delete" onclick="permaDeleteItem('${item.id}', event)" title="Apagar permanentemente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            ` : `
+            ${!isConcluido ? `<button class="icon-btn edit" onclick="openModal('${item.id}')" title="Editar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>` : `<button class="icon-btn edit" onclick="openModal('${item.id}')" title="Editar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button><button class="icon-btn restore" onclick="restoreItem('${item.id}', event)" title="Restaurar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>`}
+            ${!isConcluido ? `<button class="icon-btn conclude" onclick="concludeItem('${item.id}', event)" title="Marcar como concluído">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </button>` : ''}
+            <button class="icon-btn delete" onclick="deleteItem('${item.id}', event)" title="Mover para lixeira">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+            `}
+          </div>
+        </div>
+        ${item.cover ? `<div class="card-cover-wrap"><img class="card-cover" src="${item.cover}" alt="Capa" onerror="this.closest('.card-cover-wrap').style.display='none'"></div>` : ''}
+        <div class="card-title">${escHtml(item.title)}${isConcluido && !isExcluido ? ' <span class="concluido-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5" style="display:inline;vertical-align:middle"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}</div>
+        ${timeStr ? `<div class="card-subtitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="10" height="10" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>${escHtml(timeStr)}</div>` : '<div style="margin-bottom:6px"></div>'}
+        <div class="card-date">${isExcluido ? 'Excluído em' : isConcluido ? 'Concluído em' : 'Atualizado em'} ${item.deletedAt || item.updatedAt}</div>
+      </div>
+    `}).join('');
+
+    // Re-apply reorder mode class after re-render
+    if (reorderMode) {
+      grid.classList.add('reorder-mode');
+    }
+  }
+
+  function updateStats() {
+    document.getElementById('count-filme').textContent = items.filter(i => i.type === 'filme' && !i.deleted).length;
+    document.getElementById('count-serie').textContent = items.filter(i => i.type === 'serie' && !i.deleted).length;
+    document.getElementById('count-livro').textContent = items.filter(i => i.type === 'livro' && !i.deleted).length;
+    document.getElementById('count-novela').textContent = items.filter(i => i.type === 'novela' && !i.deleted).length;
+    const concluidoCount = items.filter(i => i.status === 'concluido' && !i.deleted).length;
+    const badge = document.getElementById('concluido-badge');
+    badge.textContent = concluidoCount > 0 ? concluidoCount : '';
+    const excluidoCount = items.filter(i => i.deleted === true).length;
+    const excluidoBadge = document.getElementById('excluido-badge');
+    excluidoBadge.textContent = excluidoCount > 0 ? excluidoCount : '';
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── REORDER MODE ──
+  let reorderMode = false;
+
+  window.toggleReorderMode = function() {
+    reorderMode = !reorderMode;
+    const btn = document.getElementById('btn-reorder');
+    const banner = document.getElementById('reorder-banner');
+    const grid = document.getElementById('cards-grid');
+
+    btn.classList.toggle('active', reorderMode);
+    banner.classList.toggle('visible', reorderMode);
+    grid.classList.toggle('reorder-mode', reorderMode);
+  }
+
+  // Move card up (-1) or down (+1) within the current filtered view
+  window.moveCard = async function(id, direction, e) {
+    e.stopPropagation();
+
+    // Build the current filtered list (same logic as render)
+    const isConcludedTab = currentTab === 'concluido';
+    const isExcluidoTab  = currentTab === 'excluido';
+    let filtered = items;
+    if (isExcluidoTab)        filtered = filtered.filter(i => i.deleted === true);
+    else if (isConcludedTab) { filtered = filtered.filter(i => i.status === 'concluido' && !i.deleted); filtered = naturalTitleSort(filtered); }
+    else {
+      filtered = filtered.filter(i => i.status !== 'concluido' && !i.deleted);
+      if (currentTab !== 'all') filtered = filtered.filter(i => i.type === currentTab);
+    }
+    if (searchQuery) filtered = filtered.filter(i =>
+      i.title.toLowerCase().includes(searchQuery) ||
+      (i.notes && i.notes.toLowerCase().includes(searchQuery))
+    );
+
+    const idx = filtered.findIndex(i => i.id === id);
+    const swapIdx = idx + direction;
+    if (idx === -1 || swapIdx < 0 || swapIdx >= filtered.length) return;
+
+    // Swap order values between the two items
+    const itemA = filtered[idx];
+    const itemB = filtered[swapIdx];
+    const orderA = itemA.order ?? idx;
+    const orderB = itemB.order ?? swapIdx;
+
+    setLoading(true);
+    try {
+      await update(ref(db, '/'), {
+        [`marcador/items/${itemA.id}/order`]: orderB,
+        [`marcador/items/${itemB.id}/order`]: orderA
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao reordenar:', err);
+      setLoading(false);
+    }
+  }
+
+  // ── keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // ── MOBILE TOUCH TOGGLE para card-actions ──
+  function isMobile() {
+    return window.matchMedia('(max-width: 640px)').matches;
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!isMobile()) return;
+
+    const card = e.target.closest('.card');
+    const clickedActionBtn = e.target.closest('.icon-btn');
+
+    // Se clicou num botão de ação, não faz o toggle (deixa o evento normal)
+    if (clickedActionBtn) return;
+
+    if (card) {
+      const isOpen = card.classList.contains('actions-open');
+
+      // Fecha todos os outros cards
+      document.querySelectorAll('.card.actions-open').forEach(c => {
+        if (c !== card) c.classList.remove('actions-open');
+      });
+
+      // Toggle no card clicado
+      card.classList.toggle('actions-open', !isOpen);
+    } else {
+      // Clicou fora de qualquer card — fecha todos
+      document.querySelectorAll('.card.actions-open').forEach(c => {
+        c.classList.remove('actions-open');
+      });
+    }
+  });
+</script>
+</div><!-- /#app-wrapper -->
+
+<!-- PIX SCREEN -->
+<div id="pix-wrapper">
+  <div class="pix-header">
+    <button class="btn-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Inicio
+    </button>
+  </div>
+  <div class="pix-content">
+    <div class="pix-title">Chave Pix</div>
+    <div class="pix-sub">Gerencie sua chave Pix</div>
+
+    <!-- Botão de ação -->
+    <div style="max-width:480px;width:100%;display:flex;gap:12px;">
+      <button onclick="pixOpenAddModal()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:var(--r-sm);border:1px solid var(--gold);background:var(--gold-bg);color:var(--gold);font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.05em;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Nova Chave
+      </button>
+    </div>
+
+    <!-- Lista de chaves salvas (exibida direto na tela) -->
+    <div style="width:100%;max-width:480px;margin-top:24px;">
+      <div id="pix-keys-list"></div>
+      <div id="pix-empty-msg" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--ash);padding:8px 0;">Nenhuma chave cadastrada ainda.</div>
+    </div>
+
+    <!-- Modal: Nova chave -->
+    <div id="pix-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)pixCloseAddModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:460px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="pix-add-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Nova chave</span>
+          <button onclick="pixCloseAddModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <span class="pix-field-label">Tipo de chave</span>
+            <div class="pix-type-grid">
+              <div class="pix-type-opt"><input type="radio" name="pix-type" id="pix-cpf" value="CPF" checked><label for="pix-cpf"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 15v-1a3 3 0 0 1 6 0v1"/><circle cx="10" cy="10" r="2"/><path d="M16 10h2M16 13h2"/></svg></span>CPF</label></div>
+              <div class="pix-type-opt"><input type="radio" name="pix-type" id="pix-cel" value="Celular"><label for="pix-cel"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg></span>Celular</label></div>
+              <div class="pix-type-opt"><input type="radio" name="pix-type" id="pix-email" value="E-mail"><label for="pix-email"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg></span>E-mail</label></div>
+              <div class="pix-type-opt"><input type="radio" name="pix-type" id="pix-aleat" value="Aleatoria"><label for="pix-aleat"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><path d="M12 2C8 2 5 5 5 8c0 4 7 13 7 13s7-9 7-13c0-3-3-6-7-6z"/><circle cx="12" cy="8" r="2"/></svg></span>Aleatoria</label></div>
+            </div>
+          </div>
+          <div>
+            <span class="pix-field-label">Nome do titular</span>
+            <div class="pix-input-wrap" style="position:relative;"><input type="text" id="pix-name-input" placeholder="Ex: João Silva..." autocomplete="off" oninput="pixShowNameSuggestions(this.value)" onblur="setTimeout(function(){var s=document.getElementById('pix-name-suggestions');if(s)s.style.display='none'},180)"><div id="pix-name-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card2);border:1px solid var(--rule2);border-radius:var(--r-sm);z-index:100;max-height:160px;overflow-y:auto;margin-top:3px;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div></div>
+          </div>
+          <div>
+            <span class="pix-field-label">Sua chave</span>
+            <div class="pix-input-wrap"><input type="text" id="pix-key-input" placeholder="Digite sua chave Pix..."></div>
+          </div>
+          <div>
+            <span class="pix-field-label">Banco / Descrição <span style="color:var(--ash);font-size:0.6rem;letter-spacing:0.08em;">(opcional)</span></span>
+            <div class="pix-input-wrap"><input type="text" id="pix-bank-input" placeholder="Ex: Nubank, Itaú, conta poupança..." autocomplete="off"></div>
+          </div>
+          <button class="pix-btn-save" onclick="pixSaveKeyAndClose()">Salvar Chave</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="pix-toast" id="pix-toast"></div>
+
+<!-- UNITV SCREEN -->
+<div id="unitv-wrapper">
+  <div class="unitv-header">
+    <button class="btn-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Inicio
+    </button>
+  </div>
+  <div class="unitv-content">
+    <!-- Seleção de plataforma -->
+    <div class="unitv-select-grid" id="unitv-select-grid">
+      <div class="unitv-select-item active" data-cat="unitv" onclick="unItvSelectCategory('unitv')">
+        <div class="unitv-select-label">UniTV</div>
+      </div>
+      <div class="unitv-select-item" data-cat="launcher" onclick="unItvSelectCategory('launcher')">
+        <div class="unitv-select-label">Launcher</div>
+      </div>
+      <div class="unitv-select-item" data-cat="smarttube" onclick="unItvSelectCategory('smarttube')">
+        <div class="unitv-select-label">Smart Tube</div>
+      </div>
+      <div class="unitv-select-item" data-cat="iptv" onclick="unItvSelectCategory('iptv')">
+        <div class="unitv-select-label">IPTV</div>
+      </div>
+      <div class="unitv-select-item add-new" id="unitv-add-section-btn" onclick="unItvOpenSectionOptionsModal()" title="Opções de seção">
+        <div class="unitv-select-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div class="unitv-select-label">Nova seção</div>
+      </div>
+    </div>
+
+    <!-- Botões de ação -->
+    <div id="unitv-add-btn-wrap" style="width:100%;max-width:480px;display:flex;gap:10px;margin-bottom:14px;">
+      <button onclick="unItvOpenAddModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:var(--r-sm);border:1px solid var(--plum);background:var(--plum-bg);color:var(--plum);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.06em;flex:1;" onmouseover="this.style.background='var(--plum)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--plum-bg)';this.style.color='var(--plum)';">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Adicionar Link
+      </button>
+      <button onclick="unItvOpenFolderOptionsModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:var(--r-sm);border:1px solid var(--rule2);background:var(--card);color:var(--cream);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.06em;flex:1;" onmouseover="this.style.borderColor='var(--plum)';this.style.color='var(--plum)';" onmouseout="this.style.borderColor='var(--rule2)';this.style.color='var(--cream)';">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.2"><path d="M4 6a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z"/><path d="M12 10v5M9.5 12.5h5"/></svg>
+        Pasta
+      </button>
+    </div>
+
+    <!-- Modal: opções de pasta -->
+    <div id="unitv-folder-options-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseFolderOptionsModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-folder-options-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Pasta</span>
+          <button onclick="unItvCloseFolderOptionsModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <button onclick="unItvCloseFolderOptionsModal();unItvOpenNewFolderModal();" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);border:1px solid var(--plum);background:var(--plum-bg);color:var(--plum);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.background='var(--plum)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--plum-bg)';this.style.color='var(--plum)';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.3"><path d="M12 5v14M5 12h14"/></svg>
+            Criar nova pasta
+          </button>
+          <button onclick="unItvCloseFolderOptionsModal();unItvOpenReorderFolderModal();" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);border:1px solid var(--rule2);background:var(--card);color:var(--cream);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.borderColor='var(--mint)';this.style.color='var(--mint)';" onmouseout="this.style.borderColor='var(--rule2)';this.style.color='var(--cream)';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.2"><path d="M3 6h18M3 12h12M3 18h6"/></svg>
+            Organizar pastas
+          </button>
+          <button onclick="unItvCloseFolderOptionsModal();unItvOpenRenameFolderModal();" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);border:1px solid var(--rule2);background:var(--card);color:var(--cream);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)';" onmouseout="this.style.borderColor='var(--rule2)';this.style.color='var(--cream)';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Renomear pasta
+          </button>
+          <button onclick="unItvCloseFolderOptionsModal();unItvOpenDeleteFolderModal();" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);border:1px solid rgba(232,112,90,0.4);background:var(--coral-bg);color:var(--coral);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.background='var(--coral)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--coral-bg)';this.style.color='var(--coral)';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Excluir pasta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: organizar pastas -->
+    <div id="unitv-reorder-folder-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseReorderFolderModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-reorder-folder-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Organizar pastas</span>
+          <button onclick="unItvCloseReorderFolderModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--smoke);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">Use as setas para definir a ordem</div>
+        <div id="unitv-reorder-folder-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;"></div>
+      </div>
+    </div>
+    <div id="unitv-rename-folder-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseRenameFolderModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-rename-folder-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Renomear pasta</span>
+          <button onclick="unItvCloseRenameFolderModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div id="unitv-rename-folder-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;"></div>
+      </div>
+    </div>
+    <div id="unitv-delete-folder-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseDeleteFolderModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-delete-folder-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Excluir pasta</span>
+          <button onclick="unItvCloseDeleteFolderModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div id="unitv-delete-folder-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+
+    <!-- Pastas de links (aparecem somente dentro da seleção UniTV) -->
+    <div id="unitv-folder-wrap" style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;"></div>
+
+    <!-- Modal: nova pasta -->
+    <div id="unitv-new-folder-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseNewFolderModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-new-folder-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <span id="unitv-new-folder-title" style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Nova pasta</span>
+          <button onclick="unItvCloseNewFolderModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <span class="unitv-field-label">Nome da pasta</span>
+            <input type="text" id="unitv-new-folder-name" placeholder="Ex: Meus Downloads..." onkeydown="if(event.key==='Enter')unItvSaveNewFolder();">
+          </div>
+          <button id="unitv-new-folder-submit-btn" onclick="unItvSaveNewFolder()" style="padding:12px 28px;border-radius:var(--r-sm);border:1px solid var(--plum);background:var(--plum-bg);color:var(--plum);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.background='var(--plum)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--plum-bg)';this.style.color='var(--plum)';">Criar pasta</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: opções de seção -->
+    <div id="unitv-section-options-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseSectionOptionsModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-section-options-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Seção</span>
+          <button onclick="unItvCloseSectionOptionsModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <button onclick="unItvCloseSectionOptionsModal();unItvOpenNewCategoryModal();" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);border:1px solid var(--plum);background:var(--plum-bg);color:var(--plum);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.background='var(--plum)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--plum-bg)';this.style.color='var(--plum)';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.3"><path d="M12 5v14M5 12h14"/></svg>
+            Criar nova seção
+          </button>
+          <button onclick="unItvCloseSectionOptionsModal();unItvOpenReorderSectionModal();" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);border:1px solid var(--rule2);background:var(--card);color:var(--cream);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.borderColor='var(--mint)';this.style.color='var(--mint)';" onmouseout="this.style.borderColor='var(--rule2)';this.style.color='var(--cream)';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.2"><path d="M3 6h18M3 12h12M3 18h6"/></svg>
+            Organizar seções
+          </button>
+          <button onclick="unItvCloseSectionOptionsModal();unItvOpenDeleteSectionModal();" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);border:1px solid rgba(232,112,90,0.4);background:var(--coral-bg);color:var(--coral);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.background='var(--coral)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--coral-bg)';this.style.color='var(--coral)';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Excluir seção
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: excluir seção -->
+    <div id="unitv-delete-section-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseDeleteSectionModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-delete-section-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Excluir seção</span>
+          <button onclick="unItvCloseDeleteSectionModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div id="unitv-delete-section-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <!-- Modal: organizar seções -->
+    <div id="unitv-reorder-section-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseReorderSectionModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-reorder-section-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Organizar seções</span>
+          <button onclick="unItvCloseReorderSectionModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--smoke);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">Use as setas para definir a ordem</div>
+        <div id="unitv-reorder-section-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <!-- Modal: nova seção -->
+    <div id="unitv-new-category-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseNewCategoryModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:420px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-new-category-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Nova seção</span>
+          <button onclick="unItvCloseNewCategoryModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <span class="unitv-field-label">Nome da seção</span>
+            <input type="text" id="unitv-new-category-name" placeholder="Ex: Firestick, Xbox..." onkeydown="if(event.key==='Enter')unItvSaveNewCategory();">
+          </div>
+          <button onclick="unItvSaveNewCategory()" style="padding:12px 28px;border-radius:var(--r-sm);border:1px solid var(--plum);background:var(--plum-bg);color:var(--plum);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.background='var(--plum)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--plum-bg)';this.style.color='var(--plum)';">Criar seção</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: adicionar link -->
+    <div id="unitv-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:3000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);opacity:0;transition:opacity 0.25s;" onclick="if(event.target===this)unItvCloseAddModal()">
+      <div style="background:var(--paper);border:1px solid var(--rule2);border-radius:18px;padding:28px;width:100%;max-width:460px;transform:translateY(20px) scale(0.97);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.7);" id="unitv-add-modal-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.4rem;color:var(--cream);letter-spacing:-0.3px;">Novo link</span>
+          <button onclick="unItvCloseAddModal()" style="background:var(--card);border:1px solid var(--rule);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--dim)'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <span class="unitv-field-label">Pasta</span>
+            <select id="unitv-link-folder"></select>
+          </div>
+          <div>
+            <span class="unitv-field-label">Nome</span>
+            <input type="text" id="unitv-link-name" placeholder="Ex: Painel de controle...">
+          </div>
+          <div>
+            <span class="unitv-field-label">Subtexto</span>
+            <input type="text" id="unitv-link-subtitle" placeholder="Ex: Acesso restrito...">
+          </div>
+          <div>
+            <span class="unitv-field-label">URL</span>
+            <input type="url" id="unitv-link-url" placeholder="https://...">
+          </div>
+          <button onclick="unItvSaveLink()" style="padding:12px 28px;border-radius:var(--r-sm);border:1px solid var(--plum);background:var(--plum-bg);color:var(--plum);font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-transform:uppercase;letter-spacing:0.06em;width:100%;" onmouseover="this.style.background='var(--plum)';this.style.color='var(--ink)';" onmouseout="this.style.background='var(--plum-bg)';this.style.color='var(--plum)';">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="unitv-toast" id="unitv-toast"></div>
+
+<!-- PIX EDIT MODAL -->
+<div id="pix-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:4000;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+  <div style="background:var(--card);border:1px solid var(--rule2);border-radius:var(--r);padding:28px;width:100%;max-width:440px;animation:fadeUp 0.25s ease both;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <span style="font-family:'Instrument Serif',serif;font-style:italic;font-size:1.3rem;color:var(--cream);">Editar Chave</span>
+      <button onclick="pixCloseEdit()" style="background:transparent;border:1px solid var(--rule);border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--smoke);cursor:pointer;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <span class="pix-field-label">Tipo de chave</span>
+        <div class="pix-type-grid">
+          <div class="pix-type-opt"><input type="radio" name="pix-edit-type" id="pedit-cpf" value="CPF" checked><label for="pedit-cpf"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 15v-1a3 3 0 0 1 6 0v1"/><circle cx="10" cy="10" r="2"/><path d="M16 10h2M16 13h2"/></svg></span>CPF</label></div>
+          <div class="pix-type-opt"><input type="radio" name="pix-edit-type" id="pedit-cel" value="Celular"><label for="pedit-cel"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg></span>Celular</label></div>
+          <div class="pix-type-opt"><input type="radio" name="pix-edit-type" id="pedit-email" value="E-mail"><label for="pedit-email"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg></span>E-mail</label></div>
+          <div class="pix-type-opt"><input type="radio" name="pix-edit-type" id="pedit-aleat" value="Aleatoria"><label for="pedit-aleat"><span class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="1.75"><path d="M12 2C8 2 5 5 5 8c0 4 7 13 7 13s7-9 7-13c0-3-3-6-7-6z"/><circle cx="12" cy="8" r="2"/></svg></span>Aleatoria</label></div>
+        </div>
+      </div>
+      <div>
+        <span class="pix-field-label">Nome do titular</span>
+        <div class="pix-input-wrap"><input type="text" id="pix-edit-name" placeholder="Ex: Joao Silva..."></div>
+      </div>
+      <div>
+        <span class="pix-field-label">Chave</span>
+        <div class="pix-input-wrap"><input type="text" id="pix-edit-key" placeholder="Digite sua chave Pix..."></div>
+      </div>
+      <div>
+        <span class="pix-field-label">Banco / Descrição <span style="color:var(--ash);font-size:0.6rem;letter-spacing:0.08em;">(opcional)</span></span>
+        <div class="pix-input-wrap"><input type="text" id="pix-edit-bank" placeholder="Ex: Nubank, Itaú, conta poupança..." autocomplete="off"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button onclick="pixCloseEdit()" style="flex:1;padding:11px;border-radius:var(--r-sm);border:1px solid var(--rule);background:transparent;color:var(--dim);font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;">Cancelar</button>
+        <button onclick="pixConfirmEdit()" class="pix-btn-save" style="flex:2;padding:11px;">Salvar Alteracoes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function pixOpenModal(id) {
+    var el = document.getElementById(id);
+    var inner = document.getElementById(id + '-inner');
+    el.style.display = 'flex';
+    requestAnimationFrame(function() {
+      el.style.opacity = '1';
+      if (inner) inner.style.transform = 'translateY(0) scale(1)';
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function pixCloseModal(id) {
+    var el = document.getElementById(id);
+    var inner = document.getElementById(id + '-inner');
+    el.style.opacity = '0';
+    if (inner) inner.style.transform = 'translateY(20px) scale(0.97)';
+    setTimeout(function() { el.style.display = 'none'; }, 260);
+    document.body.style.overflow = '';
+  }
+
+  window.pixOpenAddModal  = function() {
+    pixOpenModal('pix-add-modal');
+    setTimeout(function() { document.getElementById('pix-name-input').focus(); }, 320);
+  };
+  window.pixCloseAddModal = function() {
+    pixCloseModal('pix-add-modal');
+    document.getElementById('pix-key-input').value = '';
+    document.getElementById('pix-name-input').value = '';
+    document.getElementById('pix-bank-input').value = '';
+    var box = document.getElementById('pix-name-suggestions');
+    if (box) box.style.display = 'none';
+    var radios = document.querySelectorAll('input[name="pix-type"]');
+    if (radios.length) radios[0].checked = true;
+  };
+
+  window.pixShowNameSuggestions = function(val) {
+    var box = document.getElementById('pix-name-suggestions');
+    if (!box) return;
+    var query = (val || '').trim().toLowerCase();
+    // Coleta nomes únicos já cadastrados
+    var names = [];
+    _pixKeys.forEach(function(k) {
+      var n = (k.name || '').trim();
+      if (n && names.indexOf(n) === -1) names.push(n);
+    });
+    var filtered = query ? names.filter(function(n) { return n.toLowerCase().includes(query); }) : names;
+    if (filtered.length === 0) { box.style.display = 'none'; return; }
+    box.innerHTML = filtered.map(function(n) {
+      var keysCount = _pixKeys.filter(function(k) { return (k.name || '').trim() === n; }).length;
+      return '<div onclick="pixSelectNameSuggestion(\''+n.replace(/'/g,"\\'")+'\')" ' +
+        'style="padding:10px 14px;cursor:pointer;font-family:\'Syne\',sans-serif;font-size:0.82rem;color:var(--cream);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--rule);transition:background 0.15s;" ' +
+        'onmouseover="this.style.background=\'var(--card)\'" onmouseout="this.style.background=\'\'">'+
+        '<span>'+escPixHtml(n)+'</span>' +
+        '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.6rem;color:var(--gold);background:var(--gold-bg);border:1px solid rgba(240,192,96,0.2);border-radius:99px;padding:1px 7px;">'+keysCount+' chave'+(keysCount>1?'s':'')+'</span>' +
+        '</div>';
+    }).join('');
+    box.style.display = 'block';
+  };
+
+  window.pixSelectNameSuggestion = function(name) {
+    document.getElementById('pix-name-input').value = name;
+    var box = document.getElementById('pix-name-suggestions');
+    if (box) box.style.display = 'none';
+    // Foca no campo de chave automaticamente
+    setTimeout(function() { document.getElementById('pix-key-input').focus(); }, 50);
+  };
+
+  window.pixSaveKeyAndClose = function() {
+    var key = document.getElementById('pix-key-input').value.trim();
+    var name = document.getElementById('pix-name-input').value.trim();
+    var bank = document.getElementById('pix-bank-input').value.trim();
+    if (!key) { pixShowToast('Digite uma chave antes de salvar'); return; }
+    var type = 'CPF';
+    document.querySelectorAll('input[name="pix-type"]').forEach(function(r) {
+      if (r.checked) type = r.value;
+    });
+    var isDuplicate = _pixKeys.some(function(k) { return k.key === key; });
+    if (isDuplicate) { pixShowToast('Essa chave já está cadastrada'); return; }
+    var newKeys = _pixKeys.concat([{ key: key, type: type, name: name, bank: bank }]);
+    pixSaveToFirebase(newKeys);
+    pixShowToast('Chave salva com sucesso!');
+    pixCloseAddModal();
+  };
+
+  function goTo(section) {
+    var home = document.getElementById('home-screen');
+    home.classList.add('hidden');
+    setTimeout(function() {
+      home.style.display = 'none';
+      if (section === 'marcador') {
+        var app = document.getElementById('app-wrapper');
+        app.style.display = 'block';
+        requestAnimationFrame(function() { app.classList.add('visible'); });
+      } else if (section === 'pix') {
+        var pix = document.getElementById('pix-wrapper');
+        pix.style.display = 'flex';
+        requestAnimationFrame(function() { pix.classList.add('visible'); });
+      } else if (section === 'unitv') {
+        var unitv = document.getElementById('unitv-wrapper');
+        unitv.style.display = 'flex';
+        requestAnimationFrame(function() { unitv.classList.add('visible'); });
+      }
+    }, 380);
+  }
+
+  function goHome() {
+    var app = document.getElementById('app-wrapper');
+    var pix = document.getElementById('pix-wrapper');
+    var unitv = document.getElementById('unitv-wrapper');
+    app.classList.remove('visible');
+    pix.classList.remove('visible');
+    unitv.classList.remove('visible');
+    setTimeout(function() {
+      app.style.display = 'none';
+      pix.style.display = 'none';
+      unitv.style.display = 'none';
+      var home = document.getElementById('home-screen');
+      home.style.display = 'flex';
+      requestAnimationFrame(function() { home.classList.remove('hidden'); });
+    }, 350);
+  }
+
+  // ── PIX KEY LOGIC (Firebase) ──
+  var _pixKeys = [];        // cache local
+  var _pixEditIndex = -1;
+  var _pixListenerActive = false;
+
+  function escPixHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function pixRenderKeys(keys) {
+    var list = document.getElementById('pix-keys-list');
+    var emptyMsg = document.getElementById('pix-empty-msg');
+    var countEl = document.getElementById('pix-keys-count');
+    if (countEl) countEl.textContent = (keys && keys.length > 0) ? keys.length : '0';
+    if (!keys || keys.length === 0) {
+      list.innerHTML = '';
+      emptyMsg.style.display = 'block';
+      return;
+    }
+    emptyMsg.style.display = 'none';
+
+    // Agrupa chaves por nome do titular
+    var groups = {};
+    var groupOrder = [];
+    keys.forEach(function(item, idx) {
+      var nameKey = (item.name || '').trim() || '(sem nome)';
+      if (!groups[nameKey]) {
+        groups[nameKey] = [];
+        groupOrder.push(nameKey);
+      }
+      groups[nameKey].push({ item: item, idx: idx });
+    });
+
+    var typeIcon = {
+      'CPF': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 15v-1a3 3 0 0 1 6 0v1"/><circle cx="10" cy="10" r="2"/><path d="M16 10h2M16 13h2"/></svg>',
+      'Celular': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>',
+      'E-mail': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>',
+      'Aleatoria': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><path d="M12 2C8 2 5 5 5 8c0 4 7 13 7 13s7-9 7-13c0-3-3-6-7-6z"/><circle cx="12" cy="8" r="2"/></svg>'
+    };
+
+    list.innerHTML = groupOrder.map(function(nameKey, gi) {
+      var entries = groups[nameKey];
+      var isMulti = entries.length > 1;
+      var groupId = 'pix-group-' + gi;
+
+      var keysHtml = entries.map(function(entry) {
+        var item = entry.item;
+        var idx = entry.idx;
+        var icon = typeIcon[item.type] || '';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border-radius:8px;">' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+              '<div class="pix-saved-type-badge" style="display:inline-flex;align-items:center;gap:4px;">' + icon + escPixHtml(item.type) + '</div>' +
+              (item.bank ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.58rem;background:rgba(95,212,164,0.1);color:var(--mint);border:1px solid rgba(95,212,164,0.2);border-radius:99px;padding:1px 8px;display:inline-flex;align-items:center;gap:3px;"><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' width=\'9\' height=\'9\' stroke-width=\'2\'><rect x=\'3\' y=\'8\' width=\'18\' height=\'12\' rx=\'2\'/><path d=\'M7 8V6a5 5 0 0 1 10 0v2\'/></svg>' + escPixHtml(item.bank) + '</span>' : '') +
+            '</div>' +
+            '<div class="pix-saved-key" style="margin-top:5px;font-size:0.82rem;">' + escPixHtml(item.key) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:5px;flex-shrink:0;align-items:center;">' +
+            '<button class="pix-copy-inline" style="position:static;transform:none;color:var(--gold);" onclick="pixEditKey(' + idx + ')" title="Editar chave">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+            '</button>' +
+            '<button class="pix-copy-inline" style="position:static;transform:none;color:var(--mint);" onclick="pixCopyKeyByIndex(' + idx + ',this)" title="Copiar chave">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+            '</button>' +
+            '<button class="pix-copy-inline" style="position:static;transform:none;color:var(--coral);" onclick="pixDeleteKey(' + idx + ')" title="Remover chave">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      var personIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+      var chevronIcon = '<svg id="' + groupId + '-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2.5" style="transition:transform 0.25s ease;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>';
+
+      var countBadge = isMulti
+        ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.58rem;background:var(--gold-bg);color:var(--gold);border:1px solid rgba(240,192,96,0.25);border-radius:99px;padding:1px 7px;margin-left:6px;">' + entries.length + ' chaves</span>'
+        : '';
+
+      // Cabeçalho: clicável só se tiver múltiplas chaves
+      var headerStyle = isMulti
+        ? 'display:flex;align-items:center;gap:7px;margin-bottom:0;padding:8px 10px;cursor:pointer;border-radius:8px;transition:background 0.15s;user-select:none;'
+        : 'display:flex;align-items:center;gap:7px;margin-bottom:8px;padding:0 2px;';
+
+      var headerOnClick = isMulti ? 'onclick="pixToggleGroup(\'' + groupId + '\')"' : '';
+      var headerHover = isMulti ? 'onmouseover="this.style.background=\'rgba(255,255,255,0.04)\'" onmouseout="this.style.background=\'\'"' : '';
+
+      var header = '<div style="' + headerStyle + '" ' + headerOnClick + ' ' + headerHover + '>' +
+        '<span style="color:var(--gold);">' + personIcon + '</span>' +
+        '<span style="font-family:\'Syne\',sans-serif;font-size:0.85rem;font-weight:700;color:var(--cream);flex:1;">' + escPixHtml(nameKey) + '</span>' +
+        countBadge +
+        (isMulti ? '<span style="color:var(--smoke);margin-left:4px;">' + chevronIcon + '</span>' : '') +
+      '</div>';
+
+      // Corpo de chaves: colapsado por padrão se múltiplas
+      var bodyStyle = isMulti
+        ? 'display:flex;flex-direction:column;gap:6px;padding-left:4px;border-left:2px solid rgba(240,192,96,0.2);overflow:hidden;max-height:0;transition:max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease;opacity:0;margin-top:0;'
+        : 'display:flex;flex-direction:column;gap:6px;padding-left:4px;border-left:2px solid rgba(240,192,96,0.2);margin-top:8px;';
+
+      return '<div style="margin-bottom:' + (gi < groupOrder.length - 1 ? '10px' : '0') + ';background:' + (isMulti ? 'var(--card);border:1px solid var(--rule);border-radius:10px;padding:2px 0;' : 'transparent;') + '">' +
+        header +
+        '<div id="' + groupId + '-body" style="' + bodyStyle + (isMulti ? 'padding:0 10px;' : '') + '">' +
+          keysHtml +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  window.pixToggleGroup = function(groupId) {
+    var body = document.getElementById(groupId + '-body');
+    var chevron = document.getElementById(groupId + '-chevron');
+    if (!body) return;
+    var isOpen = body.getAttribute('data-open') === '1';
+    if (isOpen) {
+      body.style.maxHeight = body.scrollHeight + 'px';
+      requestAnimationFrame(function() {
+        body.style.maxHeight = '0';
+        body.style.opacity = '0';
+        body.style.marginTop = '0';
+        body.style.paddingBottom = '0';
+      });
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+      body.setAttribute('data-open', '0');
+    } else {
+      body.style.maxHeight = body.scrollHeight + 'px';
+      body.style.opacity = '1';
+      body.style.marginTop = '8px';
+      body.style.paddingBottom = '10px';
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+      body.setAttribute('data-open', '1');
+      setTimeout(function() {
+        if (body.getAttribute('data-open') === '1') body.style.maxHeight = '1000px';
+      }, 360);
+    }
+  };
+
+  function pixLoadKeys() {
+    // Aguarda Firebase estar disponível
+    if (!window._fbDb || !window._fbRef || !window._fbOnValue) {
+      setTimeout(pixLoadKeys, 200);
+      return;
+    }
+    if (_pixListenerActive) return;
+    _pixListenerActive = true;
+    var keysRef = window._fbRef(window._fbDb, 'pix/keys');
+    window._fbOnValue(keysRef, function(snapshot) {
+      var data = snapshot.val();
+      _pixKeys = data ? Object.values(data) : [];
+      pixRenderKeys(_pixKeys);
+    });
+  }
+
+  function pixSaveToFirebase(keys) {
+    if (!window._fbDb || !window._fbRef || !window._fbSet) return;
+    var obj = {};
+    keys.forEach(function(k, i) { obj[i] = k; });
+    window._fbSet(window._fbRef(window._fbDb, 'pix/keys'), obj);
+  }
+
+  window.pixSaveKey = function() {
+    var key = document.getElementById('pix-key-input').value.trim();
+    var name = document.getElementById('pix-name-input').value.trim();
+    if (!key) { pixShowToast('Digite uma chave antes de salvar'); return; }
+    var type = 'CPF';
+    document.querySelectorAll('input[name="pix-type"]').forEach(function(r) {
+      if (r.checked) type = r.value;
+    });
+    var isDuplicate = _pixKeys.some(function(k) { return k.key === key; });
+    if (isDuplicate) { pixShowToast('Essa chave ja esta cadastrada'); return; }
+    var newKeys = _pixKeys.concat([{ key: key, type: type, name: name }]);
+    pixSaveToFirebase(newKeys);
+    document.getElementById('pix-key-input').value = '';
+    document.getElementById('pix-name-input').value = '';
+    var radios = document.querySelectorAll('input[name="pix-type"]');
+    if (radios.length) radios[0].checked = true;
+    pixShowToast('Chave salva com sucesso!');
+  };
+
+  function pixCopyText(text, btn) {
+    // Tenta Clipboard API moderna primeiro
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        pixShowToast('Chave copiada!');
+      }).catch(function() {
+        pixCopyFallback(text, btn);
+      });
+    } else {
+      pixCopyFallback(text, btn);
+    }
+  }
+
+  function pixCopyFallback(text, btn) {
+    // Fallback: cria textarea fora da tela, seleciona e executa copy
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:none;outline:none;box-shadow:none;background:transparent;opacity:0;';
+    document.body.appendChild(ta);
+    // iOS precisa de range + selection
+    if (navigator.userAgent.match(/ipad|iphone/i)) {
+      var range = document.createRange();
+      range.selectNodeContents(ta);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      ta.setSelectionRange(0, 999999);
+    } else {
+      ta.select();
+    }
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    if (ok) {
+      pixShowToast('Chave copiada!');
+    } else {
+      pixShowToast('Não foi possível copiar');
+    }
+  }
+
+  function pixFlashBtn(btn) { /* sem alteracao visual */ }
+
+  window.pixCopyKeyByIndex = function(idx, btn) {
+    if (!_pixKeys[idx]) return;
+    pixCopyText(_pixKeys[idx].key, btn);
+  };
+
+  window.pixDeleteKey = function(idx) {
+    if (!_pixKeys[idx]) return;
+    if (!confirm('Remover a chave "' + _pixKeys[idx].key + '"?')) return;
+    var newKeys = _pixKeys.filter(function(_, i) { return i !== idx; });
+    pixSaveToFirebase(newKeys);
+    pixShowToast('Chave removida');
+  };
+
+  window.pixCopyKey = function() { pixCopyKeyByIndex(0); };
+
+  window.pixEditKey = function(idx) {
+    if (!_pixKeys[idx]) return;
+    _pixEditIndex = idx;
+    var item = _pixKeys[idx];
+    document.getElementById('pix-edit-name').value = item.name || '';
+    document.getElementById('pix-edit-key').value = item.key || '';
+    document.getElementById('pix-edit-bank').value = item.bank || '';
+    document.querySelectorAll('input[name="pix-edit-type"]').forEach(function(r) {
+      r.checked = (r.value === item.type);
+    });
+    document.getElementById('pix-edit-overlay').style.display = 'flex';
+  };
+
+  window.pixCloseEdit = function() {
+    document.getElementById('pix-edit-overlay').style.display = 'none';
+    _pixEditIndex = -1;
+  };
+
+  window.pixConfirmEdit = function() {
+    if (_pixEditIndex < 0) return;
+    var key = document.getElementById('pix-edit-key').value.trim();
+    var name = document.getElementById('pix-edit-name').value.trim();
+    var bank = document.getElementById('pix-edit-bank').value.trim();
+    if (!key) { pixShowToast('Digite uma chave antes de salvar'); return; }
+    var type = 'CPF';
+    document.querySelectorAll('input[name="pix-edit-type"]').forEach(function(r) {
+      if (r.checked) type = r.value;
+    });
+    var isDuplicate = _pixKeys.some(function(k, i) { return i !== _pixEditIndex && k.key === key; });
+    if (isDuplicate) { pixShowToast('Essa chave ja esta cadastrada'); return; }
+    var newKeys = _pixKeys.slice();
+    newKeys[_pixEditIndex] = { key: key, type: type, name: name, bank: bank };
+    pixSaveToFirebase(newKeys);
+    pixCloseEdit();
+    pixShowToast('Chave atualizada!');
+  };
+
+  // Fechar modal ao clicar fora (sem propagar para o modal de chaves atrás)
+  document.getElementById('pix-edit-overlay').addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (e.target === this) pixCloseEdit();
+  });
+
+  function pixShowToast(msg) {
+    var t = document.getElementById('pix-toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2200);
+  }
+
+  // Load on pix screen entry
+  var _origGoTo = goTo;
+  goTo = function(section) {
+    _origGoTo(section);
+    if (section === 'pix') setTimeout(pixLoadKeys, 400);
+  };
+
+  // ── UNITV LINK LOGIC (Firebase) ──
+  var _unItvLinks = [];
+  var _unItvLinksListenerActive = false;
+  var _unItvFoldersListenerActive = false;
+  var _unItvEditIndex = -1;
+  var _unItvCategory = 'unitv';
+  var _unItvAddFolder = 'googledrive';
+  var _unItvDefaultFolders = [
+    { key: 'googledrive', name: 'Google Drive' },
+    { key: 'omeulink', name: 'O Meu Link' },
+    { key: 'baixarauto', name: 'Baixar Automático' },
+    { key: 'codigosdownloader', name: 'Códigos Downloader' }
+  ];
+  var _unItvFolders = _unItvDefaultFolders.slice();
+  document.addEventListener('DOMContentLoaded', function() { unItvRenderFolders(); });
+  if (document.readyState !== 'loading') { setTimeout(function() { unItvRenderFolders(); }, 0); }
+
+  // ── UNITV CUSTOM CATEGORIES (seções) ──
+  var _unItvDefaultCategoryKeys = ['unitv', 'launcher', 'smarttube', 'iptv'];
+  var _unItvDefaultCategoryNames = { unitv: 'UniTV', launcher: 'Launcher', smarttube: 'Smart Tube', iptv: 'IPTV' };
+  var _unItvCustomCategories = [];
+  var _unItvDeletedDefaults = [];
+  var _unItvDeletedDefaultsListenerActive = false;
+  var _unItvCategoriesListenerActive = false;
+  var _unItvSectionOrder = [];
+  var _unItvSectionOrderListenerActive = false;
+
+  function unItvCategoryIconSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/></svg>';
+  }
+
+  function unItvSlugifyCategory(name) {
+    var slug = (name || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+    if (!slug) slug = 'secao';
+    var base = slug, i = 2;
+    var existingKeys = _unItvDefaultCategoryKeys.concat(_unItvCustomCategories.map(function(c) { return c.key; }));
+    while (existingKeys.indexOf(slug) !== -1) { slug = base + i; i++; }
+    return slug;
+  }
+
+  function unItvRenderCustomCategories() {
+    var addBtn = document.getElementById('unitv-add-section-btn');
+    if (!addBtn) return;
+    var grid = addBtn.parentNode;
+    // Remove previously rendered custom category tiles
+    grid.querySelectorAll('.unitv-select-item.custom-cat').forEach(function(el) { el.remove(); });
+    _unItvCustomCategories.forEach(function(c) {
+      var div = document.createElement('div');
+      div.className = 'unitv-select-item custom-cat';
+      div.setAttribute('data-cat', c.key);
+      div.setAttribute('onclick', "unItvSelectCategory('" + c.key + "')");
+      div.innerHTML = '<div class="unitv-select-label">' + escPixHtml(c.name) + '</div>';
+      grid.insertBefore(div, addBtn);
+    });
+    unItvApplySectionOrder();
+  }
+
+  // ── Ordem das seções ──
+  function unItvGetOrderedSectionKeys() {
+    var defaults = _unItvDefaultCategoryKeys.filter(function(k) { return _unItvDeletedDefaults.indexOf(k) === -1; });
+    var customs = _unItvCustomCategories.map(function(c) { return c.key; });
+    var all = defaults.concat(customs);
+    var ordered = _unItvSectionOrder.filter(function(k) { return all.indexOf(k) !== -1; });
+    all.forEach(function(k) { if (ordered.indexOf(k) === -1) ordered.push(k); });
+    return ordered;
+  }
+
+  function unItvSectionNameForKey(key) {
+    if (_unItvDefaultCategoryNames[key]) return _unItvDefaultCategoryNames[key];
+    var c = _unItvCustomCategories.filter(function(c) { return c.key === key; })[0];
+    return c ? c.name : key;
+  }
+
+  function unItvApplySectionOrder() {
+    var grid = document.getElementById('unitv-select-grid');
+    var addBtn = document.getElementById('unitv-add-section-btn');
+    if (!grid || !addBtn) return;
+    var order = unItvGetOrderedSectionKeys();
+    order.forEach(function(key) {
+      var tile = grid.querySelector('.unitv-select-item[data-cat="' + key + '"]');
+      if (tile) grid.insertBefore(tile, addBtn);
+    });
+  }
+
+  function unItvSaveSectionOrderToFirebase() {
+    if (!window._fbDb || !window._fbRef || !window._fbSet) return;
+    window._fbSet(window._fbRef(window._fbDb, 'unitv/sectionOrder'), _unItvSectionOrder);
+  }
+
+  function unItvLoadSectionOrder() {
+    if (!window._fbDb || !window._fbRef || !window._fbOnValue) {
+      setTimeout(unItvLoadSectionOrder, 200);
+      return;
+    }
+    if (_unItvSectionOrderListenerActive) return;
+    _unItvSectionOrderListenerActive = true;
+    var ref = window._fbRef(window._fbDb, 'unitv/sectionOrder');
+    window._fbOnValue(ref, function(snapshot) {
+      var data = snapshot.val();
+      _unItvSectionOrder = data ? (Array.isArray(data) ? data.filter(Boolean) : Object.values(data)) : [];
+      unItvApplySectionOrder();
+    });
+  }
+
+  window.unItvOpenReorderSectionModal = function() {
+    unItvRenderReorderSectionList();
+    unItvOpenModal('unitv-reorder-section-modal');
+  };
+
+  window.unItvCloseReorderSectionModal = function() {
+    unItvCloseModal('unitv-reorder-section-modal');
+  };
+
+  function unItvRenderReorderSectionList() {
+    var list = document.getElementById('unitv-reorder-section-list');
+    if (!list) return;
+    var order = unItvGetOrderedSectionKeys();
+    if (order.length === 0) {
+      list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhuma seção.</div>';
+      return;
+    }
+    list.innerHTML = order.map(function(key, i) {
+      var isFirst = i === 0, isLast = i === order.length - 1;
+      var name = unItvSectionNameForKey(key);
+      return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);">' +
+        '<div style="width:32px;height:32px;border-radius:8px;background:var(--plum-bg);border:1px solid rgba(200,127,204,0.2);display:flex;align-items:center;justify-content:center;color:var(--plum);flex-shrink:0;">' + unItvCategoryIconSvg() + '</div>' +
+        '<div style="flex:1;min-width:0;font-family:\'Syne\',sans-serif;font-size:0.85rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(name) + '</div>' +
+        '<div style="display:flex;gap:5px;flex-shrink:0;">' +
+          '<button onclick="unItvMoveSection(' + i + ',-1)"' + (isFirst ? ' disabled' : '') + ' style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:' + (isFirst ? 'var(--ash)' : 'var(--dim)') + ';cursor:' + (isFirst ? 'default' : 'pointer') + ';transition:all 0.15s;opacity:' + (isFirst ? '0.4' : '1') + ';"' + (isFirst ? '' : ' onmouseover="this.style.color=\'var(--mint)\';this.style.borderColor=\'rgba(95,212,164,0.4)\';this.style.background=\'var(--mint-bg)\'" onmouseout="this.style.color=\'var(--dim)\';this.style.borderColor=\'var(--rule)\';this.style.background=\'transparent\'"') + ' title="Mover para cima">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>' +
+          '</button>' +
+          '<button onclick="unItvMoveSection(' + i + ',1)"' + (isLast ? ' disabled' : '') + ' style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:' + (isLast ? 'var(--ash)' : 'var(--dim)') + ';cursor:' + (isLast ? 'default' : 'pointer') + ';transition:all 0.15s;opacity:' + (isLast ? '0.4' : '1') + ';"' + (isLast ? '' : ' onmouseover="this.style.color=\'var(--mint)\';this.style.borderColor=\'rgba(95,212,164,0.4)\';this.style.background=\'var(--mint-bg)\'" onmouseout="this.style.color=\'var(--dim)\';this.style.borderColor=\'var(--rule)\';this.style.background=\'transparent\'"') + ' title="Mover para baixo">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.4"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  window.unItvMoveSection = function(index, dir) {
+    var order = unItvGetOrderedSectionKeys();
+    var newIndex = index + dir;
+    if (newIndex < 0 || newIndex >= order.length) return;
+    var tmp = order[index];
+    order[index] = order[newIndex];
+    order[newIndex] = tmp;
+    _unItvSectionOrder = order;
+    unItvSaveSectionOrderToFirebase();
+    unItvApplySectionOrder();
+    unItvRenderReorderSectionList();
+  };
+
+  function unItvSaveCategoriesToFirebase() {
+    if (!window._fbDb || !window._fbRef || !window._fbSet) return;
+    var obj = {};
+    _unItvCustomCategories.forEach(function(c, i) { obj[i] = c; });
+    window._fbSet(window._fbRef(window._fbDb, 'unitv/categories'), obj);
+  }
+
+  function unItvLoadCategories() {
+    if (!window._fbDb || !window._fbRef || !window._fbOnValue) {
+      setTimeout(unItvLoadCategories, 200);
+      return;
+    }
+    if (_unItvCategoriesListenerActive) return;
+    _unItvCategoriesListenerActive = true;
+    var ref = window._fbRef(window._fbDb, 'unitv/categories');
+    window._fbOnValue(ref, function(snapshot) {
+      var data = snapshot.val();
+      _unItvCustomCategories = data ? Object.values(data) : [];
+      unItvRenderCustomCategories();
+    });
+  }
+
+  function unItvSaveDeletedDefaultsToFirebase() {
+    if (!window._fbDb || !window._fbRef || !window._fbSet) return;
+    window._fbSet(window._fbRef(window._fbDb, 'unitv/deletedDefaults'), _unItvDeletedDefaults);
+  }
+
+  function unItvApplyDeletedDefaults() {
+    _unItvDefaultCategoryKeys.forEach(function(key) {
+      var tile = document.querySelector('#unitv-select-grid .unitv-select-item[data-cat="' + key + '"]');
+      if (tile) tile.style.display = _unItvDeletedDefaults.indexOf(key) !== -1 ? 'none' : '';
+    });
+    // Se a seção padrão atualmente selecionada foi excluída, troca para a primeira disponível
+    if (_unItvDefaultCategoryKeys.indexOf(_unItvCategory) !== -1 && _unItvDeletedDefaults.indexOf(_unItvCategory) !== -1) {
+      var fallback = _unItvDefaultCategoryKeys.filter(function(k) { return _unItvDeletedDefaults.indexOf(k) === -1; })[0];
+      if (!fallback && _unItvCustomCategories.length > 0) fallback = _unItvCustomCategories[0].key;
+      if (fallback) unItvSelectCategory(fallback);
+    }
+    unItvApplySectionOrder();
+  }
+
+  function unItvLoadDeletedDefaults() {
+    if (!window._fbDb || !window._fbRef || !window._fbOnValue) {
+      setTimeout(unItvLoadDeletedDefaults, 200);
+      return;
+    }
+    if (_unItvDeletedDefaultsListenerActive) return;
+    _unItvDeletedDefaultsListenerActive = true;
+    var ref = window._fbRef(window._fbDb, 'unitv/deletedDefaults');
+    window._fbOnValue(ref, function(snapshot) {
+      var data = snapshot.val();
+      _unItvDeletedDefaults = data ? (Array.isArray(data) ? data.filter(Boolean) : Object.values(data)) : [];
+      unItvApplyDeletedDefaults();
+    });
+  }
+
+  window.unItvOpenSectionOptionsModal = function() {
+    unItvOpenModal('unitv-section-options-modal');
+  };
+
+  window.unItvCloseSectionOptionsModal = function() {
+    unItvCloseModal('unitv-section-options-modal');
+  };
+
+  window.unItvOpenDeleteSectionModal = function() {
+    var list = document.getElementById('unitv-delete-section-list');
+    if (list) {
+      var remainingDefaults = _unItvDefaultCategoryKeys.filter(function(k) { return _unItvDeletedDefaults.indexOf(k) === -1; });
+      var allItems = remainingDefaults.map(function(k) {
+        return { key: k, name: _unItvDefaultCategoryNames[k] || k, isDefault: true };
+      }).concat(_unItvCustomCategories.map(function(c) {
+        return { key: c.key, name: c.name, isDefault: false };
+      }));
+      if (allItems.length === 0) {
+        list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhuma seção para excluir.</div>';
+      } else {
+        list.innerHTML = allItems.map(function(c) {
+          return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);">' +
+            '<div style="width:32px;height:32px;border-radius:8px;background:var(--plum-bg);border:1px solid rgba(200,127,204,0.2);display:flex;align-items:center;justify-content:center;color:var(--plum);flex-shrink:0;">' + unItvCategoryIconSvg() + '</div>' +
+            '<div style="flex:1;min-width:0;font-family:\'Syne\',sans-serif;font-size:0.85rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(c.name) + '</div>' +
+            '<button onclick="unItvDeleteSection(\'' + c.key + '\', ' + (c.isDefault ? 'true' : 'false') + ')" style="width:32px;height:32px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;flex-shrink:0;" onmouseover="this.style.color=\'var(--coral)\';this.style.borderColor=\'rgba(232,112,90,0.4)\';this.style.background=\'var(--coral-bg)\'" onmouseout="this.style.color=\'var(--dim)\';this.style.borderColor=\'var(--rule)\';this.style.background=\'transparent\'" title="Excluir seção">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
+            '</button>' +
+          '</div>';
+        }).join('');
+      }
+    }
+    unItvOpenModal('unitv-delete-section-modal');
+  };
+
+  window.unItvCloseDeleteSectionModal = function() {
+    unItvCloseModal('unitv-delete-section-modal');
+  };
+
+  window.unItvDeleteSection = function(key, isDefault) {
+    var name = isDefault ? (_unItvDefaultCategoryNames[key] || key) : (_unItvCustomCategories.filter(function(c) { return c.key === key; })[0] || {}).name || key;
+    var linkCount = _unItvLinks.filter(function(l) { return (l.category || 'unitv') === key; }).length;
+    var msg = 'Excluir a seção "' + name + '"?';
+    if (linkCount > 0) msg += ' Isso também removerá ' + linkCount + ' link' + (linkCount > 1 ? 's' : '') + ' salvo' + (linkCount > 1 ? 's' : '') + ' nela.';
+    if (!confirm(msg)) return;
+
+    if (isDefault) {
+      if (_unItvDeletedDefaults.indexOf(key) === -1) _unItvDeletedDefaults.push(key);
+      unItvSaveDeletedDefaultsToFirebase();
+      unItvApplyDeletedDefaults();
+    } else {
+      _unItvCustomCategories = _unItvCustomCategories.filter(function(c) { return c.key !== key; });
+      unItvSaveCategoriesToFirebase();
+      unItvRenderCustomCategories();
+    }
+
+    if (window._fbDb && window._fbRef && window._fbRemove) {
+      window._fbRemove(window._fbRef(window._fbDb, 'unitv/foldersByCategory/' + key));
+    }
+    if (linkCount > 0) {
+      _unItvLinks = _unItvLinks.filter(function(l) { return (l.category || 'unitv') !== key; });
+      unItvSaveToFirebase(_unItvLinks);
+    }
+    if (_unItvCategory === key) {
+      var remaining = _unItvDefaultCategoryKeys.filter(function(k) { return k !== key && _unItvDeletedDefaults.indexOf(k) === -1; }).concat(_unItvCustomCategories.map(function(c) { return c.key; }));
+      unItvSelectCategory(remaining[0] || 'unitv');
+    } else {
+      unItvRenderLinks(_unItvLinks);
+    }
+    unItvShowToast('Seção excluída');
+    window.unItvOpenDeleteSectionModal();
+  };
+
+  window.unItvOpenNewCategoryModal = function() {
+    document.getElementById('unitv-new-category-name').value = '';
+    unItvOpenModal('unitv-new-category-modal');
+    setTimeout(function() { document.getElementById('unitv-new-category-name').focus(); }, 320);
+  };
+
+  window.unItvCloseNewCategoryModal = function() {
+    unItvCloseModal('unitv-new-category-modal');
+    document.getElementById('unitv-new-category-name').value = '';
+  };
+
+  window.unItvSaveNewCategory = function() {
+    var name = document.getElementById('unitv-new-category-name').value.trim();
+    if (!name) { unItvShowToast('Digite um nome para a seção'); document.getElementById('unitv-new-category-name').focus(); return; }
+    var key = unItvSlugifyCategory(name);
+    _unItvCustomCategories = _unItvCustomCategories.concat([{ key: key, name: name }]);
+    unItvSaveCategoriesToFirebase();
+    unItvRenderCustomCategories();
+    unItvShowToast('Seção criada!');
+    window.unItvCloseNewCategoryModal();
+    unItvSelectCategory(key);
+  };
+
+  function unItvFolderIconSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="19" height="19" stroke-width="1.8"><path d="M4 6a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z"/></svg>';
+  }
+
+  function unItvSlugify(name) {
+    var slug = (name || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+    if (!slug) slug = 'pasta';
+    var base = slug, i = 2;
+    var existingKeys = _unItvFolders.map(function(f) { return f.key; });
+    while (existingKeys.indexOf(slug) !== -1) { slug = base + i; i++; }
+    return slug;
+  }
+
+  function unItvRenderFolders() {
+    var wrap = document.getElementById('unitv-folder-wrap');
+    if (!wrap) return;
+    wrap.innerHTML = _unItvFolders.map(function(f) {
+      var key = f.key, name = f.name;
+      return '<div>' +
+        '<div id="unitv-folder-' + key + '" class="unitv-folder" onclick="unItvToggleFolder(\'' + key + '\')">' +
+          '<div class="unitv-folder-header">' +
+            '<div class="unitv-folder-icon">' + unItvFolderIconSvg() + '</div>' +
+            '<div class="unitv-folder-info">' +
+              '<div class="unitv-folder-name">' + escPixHtml(name) + '</div>' +
+              '<div class="unitv-folder-count" id="unitv-folder-count-' + key + '">0 links</div>' +
+            '</div>' +
+            '<svg class="unitv-folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>' +
+          '</div>' +
+        '</div>' +
+        '<div id="unitv-folder-body-' + key + '" class="unitv-folder-body">' +
+          '<div id="unitv-links-list-' + key + '"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    var sel = document.getElementById('unitv-link-folder');
+    if (sel) {
+      sel.innerHTML = _unItvFolders.map(function(f) {
+        return '<option value="' + f.key + '">' + escPixHtml(f.name) + '</option>';
+      }).join('');
+    }
+  }
+
+  function unItvSaveFoldersToFirebase() {
+    if (!window._fbDb || !window._fbRef || !window._fbSet) return;
+    var obj = {};
+    _unItvFolders.forEach(function(f, i) { obj[i] = f; });
+    window._fbSet(window._fbRef(window._fbDb, 'unitv/foldersByCategory/' + _unItvCategory), obj);
+  }
+
+  // Pastas agora ficam isoladas por seção (categoria). Cada seção nova nasce sem pastas;
+  // a seção "unitv" original migra automaticamente as pastas que já existiam no caminho antigo.
+  var _unItvFoldersLoadedCategory = null;
+  var _unItvFoldersUnsubscribe = null;
+
+  function unItvLoadFoldersForCategory(cat) {
+    if (!window._fbDb || !window._fbRef || !window._fbOnValue) {
+      setTimeout(function() { unItvLoadFoldersForCategory(cat); }, 200);
+      return;
+    }
+    if (_unItvFoldersLoadedCategory === cat) return;
+    _unItvFoldersLoadedCategory = cat;
+    if (typeof _unItvFoldersUnsubscribe === 'function') { _unItvFoldersUnsubscribe(); }
+    var ref = window._fbRef(window._fbDb, 'unitv/foldersByCategory/' + cat);
+    _unItvFoldersUnsubscribe = window._fbOnValue(ref, function(snapshot) {
+      if (_unItvCategory !== cat) return; // resposta de uma seção que já não é a atual
+      var data = snapshot.val();
+      if (data) {
+        _unItvFolders = Object.values(data);
+        unItvRenderFolders();
+        unItvRenderLinks(_unItvLinks);
+      } else if (cat === 'unitv') {
+        // Migração única: traz as pastas do caminho antigo (global) só para a seção "unitv"
+        var legacyRef = window._fbRef(window._fbDb, 'unitv/folders');
+        window._fbOnValue(legacyRef, function(legacySnap) {
+          if (_unItvCategory !== cat) return;
+          var legacyData = legacySnap.val();
+          _unItvFolders = legacyData ? Object.values(legacyData) : _unItvDefaultFolders.slice();
+          unItvSaveFoldersToFirebase();
+          unItvRenderFolders();
+          unItvRenderLinks(_unItvLinks);
+        }, { onlyOnce: true });
+      } else {
+        _unItvFolders = [];
+        unItvRenderFolders();
+        unItvRenderLinks(_unItvLinks);
+      }
+    });
+  }
+
+  function unItvLoadFolders() {
+    unItvLoadFoldersForCategory(_unItvCategory);
+  }
+
+  var _unItvRenameFolderKey = null;
+
+  window.unItvOpenNewFolderModal = function() {
+    _unItvRenameFolderKey = null;
+    var title = document.getElementById('unitv-new-folder-title');
+    var btn = document.getElementById('unitv-new-folder-submit-btn');
+    if (title) title.textContent = 'Nova pasta';
+    if (btn) btn.textContent = 'Criar pasta';
+    document.getElementById('unitv-new-folder-name').value = '';
+    unItvOpenModal('unitv-new-folder-modal');
+    setTimeout(function() { document.getElementById('unitv-new-folder-name').focus(); }, 320);
+  };
+
+  window.unItvCloseNewFolderModal = function() {
+    unItvCloseModal('unitv-new-folder-modal');
+    document.getElementById('unitv-new-folder-name').value = '';
+    _unItvRenameFolderKey = null;
+  };
+
+  window.unItvSaveNewFolder = function() {
+    var name = document.getElementById('unitv-new-folder-name').value.trim();
+    if (!name) { unItvShowToast('Digite um nome para a pasta'); document.getElementById('unitv-new-folder-name').focus(); return; }
+    if (_unItvRenameFolderKey) {
+      var key = _unItvRenameFolderKey;
+      _unItvFolders = _unItvFolders.map(function(f) { return f.key === key ? { key: f.key, name: name } : f; });
+      unItvSaveFoldersToFirebase();
+      unItvRenderFolders();
+      unItvRenderLinks(_unItvLinks);
+      unItvShowToast('Pasta renomeada!');
+    } else {
+      var newKey = unItvSlugify(name);
+      _unItvFolders = _unItvFolders.concat([{ key: newKey, name: name }]);
+      unItvSaveFoldersToFirebase();
+      unItvRenderFolders();
+      unItvRenderLinks(_unItvLinks);
+      unItvShowToast('Pasta criada!');
+    }
+    window.unItvCloseNewFolderModal();
+  };
+
+  window.unItvOpenRenameFolderModal = function() {
+    var list = document.getElementById('unitv-rename-folder-list');
+    if (list) {
+      if (_unItvFolders.length === 0) {
+        list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhuma pasta.</div>';
+      } else {
+        list.innerHTML = _unItvFolders.map(function(f) {
+          return '<div onclick="unItvStartRenameFolder(\'' + f.key + '\')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor=\'rgba(240,192,96,0.4)\'" onmouseout="this.style.borderColor=\'var(--rule)\'">' +
+            '<div style="width:32px;height:32px;border-radius:8px;background:var(--plum-bg);border:1px solid rgba(200,127,204,0.2);display:flex;align-items:center;justify-content:center;color:var(--plum);flex-shrink:0;">' + unItvFolderIconSvg() + '</div>' +
+            '<div style="flex:1;min-width:0;font-family:\'Syne\',sans-serif;font-size:0.85rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(f.name) + '</div>' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2" style="color:var(--gold);flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+          '</div>';
+        }).join('');
+      }
+    }
+    unItvOpenModal('unitv-rename-folder-modal');
+  };
+
+  window.unItvCloseRenameFolderModal = function() {
+    unItvCloseModal('unitv-rename-folder-modal');
+  };
+
+  window.unItvStartRenameFolder = function(key) {
+    var folder = _unItvFolders.filter(function(f) { return f.key === key; })[0];
+    if (!folder) return;
+    unItvCloseRenameFolderModal();
+    _unItvRenameFolderKey = key;
+    var title = document.getElementById('unitv-new-folder-title');
+    var btn = document.getElementById('unitv-new-folder-submit-btn');
+    if (title) title.textContent = 'Renomear pasta';
+    if (btn) btn.textContent = 'Salvar';
+    document.getElementById('unitv-new-folder-name').value = folder.name;
+    unItvOpenModal('unitv-new-folder-modal');
+    setTimeout(function() {
+      var input = document.getElementById('unitv-new-folder-name');
+      input.focus();
+      input.select();
+    }, 320);
+  };
+
+  window.unItvOpenReorderFolderModal = function() {
+    unItvRenderReorderList();
+    unItvOpenModal('unitv-reorder-folder-modal');
+  };
+
+  window.unItvCloseReorderFolderModal = function() {
+    unItvCloseModal('unitv-reorder-folder-modal');
+  };
+
+  function unItvRenderReorderList() {
+    var list = document.getElementById('unitv-reorder-folder-list');
+    if (!list) return;
+    if (_unItvFolders.length === 0) {
+      list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhuma pasta.</div>';
+      return;
+    }
+    list.innerHTML = _unItvFolders.map(function(f, i) {
+      var isFirst = i === 0, isLast = i === _unItvFolders.length - 1;
+      return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);">' +
+        '<div style="width:32px;height:32px;border-radius:8px;background:var(--plum-bg);border:1px solid rgba(200,127,204,0.2);display:flex;align-items:center;justify-content:center;color:var(--plum);flex-shrink:0;">' + unItvFolderIconSvg() + '</div>' +
+        '<div style="flex:1;min-width:0;font-family:\'Syne\',sans-serif;font-size:0.85rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(f.name) + '</div>' +
+        '<div style="display:flex;gap:5px;flex-shrink:0;">' +
+          '<button onclick="unItvMoveFolder(' + i + ',-1)"' + (isFirst ? ' disabled' : '') + ' style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:' + (isFirst ? 'var(--ash)' : 'var(--dim)') + ';cursor:' + (isFirst ? 'default' : 'pointer') + ';transition:all 0.15s;opacity:' + (isFirst ? '0.4' : '1') + ';"' + (isFirst ? '' : ' onmouseover="this.style.color=\'var(--mint)\';this.style.borderColor=\'rgba(95,212,164,0.4)\';this.style.background=\'var(--mint-bg)\'" onmouseout="this.style.color=\'var(--dim)\';this.style.borderColor=\'var(--rule)\';this.style.background=\'transparent\'"') + ' title="Mover para cima">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>' +
+          '</button>' +
+          '<button onclick="unItvMoveFolder(' + i + ',1)"' + (isLast ? ' disabled' : '') + ' style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:' + (isLast ? 'var(--ash)' : 'var(--dim)') + ';cursor:' + (isLast ? 'default' : 'pointer') + ';transition:all 0.15s;opacity:' + (isLast ? '0.4' : '1') + ';"' + (isLast ? '' : ' onmouseover="this.style.color=\'var(--mint)\';this.style.borderColor=\'rgba(95,212,164,0.4)\';this.style.background=\'var(--mint-bg)\'" onmouseout="this.style.color=\'var(--dim)\';this.style.borderColor=\'var(--rule)\';this.style.background=\'transparent\'"') + ' title="Mover para baixo">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2.4"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  window.unItvMoveFolder = function(index, dir) {
+    var newIndex = index + dir;
+    if (newIndex < 0 || newIndex >= _unItvFolders.length) return;
+    var arr = _unItvFolders.slice();
+    var tmp = arr[index];
+    arr[index] = arr[newIndex];
+    arr[newIndex] = tmp;
+    _unItvFolders = arr;
+    unItvSaveFoldersToFirebase();
+    unItvRenderFolders();
+    unItvRenderLinks(_unItvLinks);
+    unItvRenderReorderList();
+  };
+
+  window.unItvOpenFolderOptionsModal = function() {
+    unItvOpenModal('unitv-folder-options-modal');
+  };
+
+  window.unItvCloseFolderOptionsModal = function() {
+    unItvCloseModal('unitv-folder-options-modal');
+  };
+
+  window.unItvOpenDeleteFolderModal = function() {
+    var list = document.getElementById('unitv-delete-folder-list');
+    if (list) {
+      if (_unItvFolders.length === 0) {
+        list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhuma pasta.</div>';
+      } else {
+        list.innerHTML = _unItvFolders.map(function(f) {
+          return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);">' +
+            '<div style="width:32px;height:32px;border-radius:8px;background:var(--plum-bg);border:1px solid rgba(200,127,204,0.2);display:flex;align-items:center;justify-content:center;color:var(--plum);flex-shrink:0;">' + unItvFolderIconSvg() + '</div>' +
+            '<div style="flex:1;min-width:0;font-family:\'Syne\',sans-serif;font-size:0.85rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(f.name) + '</div>' +
+            '<button onclick="unItvDeleteFolder(\'' + f.key + '\')" style="width:32px;height:32px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;flex-shrink:0;" onmouseover="this.style.color=\'var(--coral)\';this.style.borderColor=\'rgba(232,112,90,0.4)\';this.style.background=\'var(--coral-bg)\'" onmouseout="this.style.color=\'var(--dim)\';this.style.borderColor=\'var(--rule)\';this.style.background=\'transparent\'" title="Excluir pasta">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
+            '</button>' +
+          '</div>';
+        }).join('');
+      }
+    }
+    unItvOpenModal('unitv-delete-folder-modal');
+  };
+
+  window.unItvCloseDeleteFolderModal = function() {
+    unItvCloseModal('unitv-delete-folder-modal');
+  };
+
+  window.unItvDeleteFolder = function(key) {
+    var folder = _unItvFolders.filter(function(f) { return f.key === key; })[0];
+    var linkCount = _unItvLinks.filter(function(l) { return (l.folder || 'googledrive') === key; }).length;
+    var msg = 'Excluir a pasta "' + (folder ? folder.name : key) + '"?';
+    if (linkCount > 0) msg += ' Isso também removerá ' + linkCount + ' link' + (linkCount > 1 ? 's' : '') + ' salvo' + (linkCount > 1 ? 's' : '') + ' nela.';
+    if (!confirm(msg)) return;
+    _unItvFolders = _unItvFolders.filter(function(f) { return f.key !== key; });
+    unItvSaveFoldersToFirebase();
+    if (linkCount > 0) {
+      _unItvLinks = _unItvLinks.filter(function(l) { return (l.folder || 'googledrive') !== key; });
+      unItvSaveToFirebase(_unItvLinks);
+    }
+    unItvRenderFolders();
+    unItvRenderLinks(_unItvLinks);
+    unItvShowToast('Pasta excluída');
+    window.unItvOpenDeleteFolderModal();
+  };
+
+  window.unItvSelectCategory = function(cat) {
+    _unItvCategory = cat;
+    document.querySelectorAll('#unitv-select-grid .unitv-select-item').forEach(function(el) {
+      el.classList.toggle('active', el.getAttribute('data-cat') === cat);
+    });
+    var wrap = document.getElementById('unitv-folder-wrap');
+    var btnWrap = document.getElementById('unitv-add-btn-wrap');
+    if (wrap) wrap.style.display = 'flex';
+    if (btnWrap) btnWrap.style.display = 'flex';
+    // Limpa as pastas na hora enquanto carrega as da nova seção, para não mostrar
+    // por um instante as pastas da seção anterior.
+    _unItvFolders = [];
+    unItvRenderFolders();
+    unItvRenderLinks(_unItvLinks);
+    unItvLoadFoldersForCategory(cat);
+  };
+
+  function unItvShowToast(msg) {
+    var t = document.getElementById('unitv-toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2200);
+  }
+
+  function unItvSaveToFirebase(links) {
+    if (!window._fbDb || !window._fbRef || !window._fbSet) return;
+    var obj = {};
+    links.forEach(function(l, i) { obj[i] = l; });
+    window._fbSet(window._fbRef(window._fbDb, 'unitv/links'), obj);
+  }
+
+  window.unItvToggleFolder = function(key) {
+    var folder = document.getElementById('unitv-folder-' + key);
+    var body = document.getElementById('unitv-folder-body-' + key);
+    if (!folder || !body) return;
+    var isOpen = folder.classList.toggle('open');
+    body.classList.toggle('open', isOpen);
+  };
+
+  function unItvUpdateFolderCount(key, count) {
+    var el = document.getElementById('unitv-folder-count-' + key);
+    if (!el) return;
+    el.textContent = count + (count === 1 ? ' link' : ' links');
+  }
+
+  function unItvRenderLinks(links) {
+    var byFolder = {};
+    _unItvFolders.forEach(function(f) { byFolder[f.key] = []; });
+    (links || []).forEach(function(l, i) {
+      if ((l.category || 'unitv') !== _unItvCategory) return;
+      var key = l.folder || 'googledrive';
+      if (!byFolder[key]) byFolder[key] = [];
+      byFolder[key].push({ item: l, origIndex: i });
+    });
+    _unItvFolders.forEach(function(f) {
+      var key = f.key;
+      var filtered = byFolder[key] || [];
+      unItvUpdateFolderCount(key, filtered.length);
+      var list = document.getElementById('unitv-links-list-' + key);
+      if (!list) return;
+      if (filtered.length === 0) {
+        list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhum link salvo.</div>';
+        return;
+      }
+      list.innerHTML = filtered.map(function(f) {
+        var l = f.item, idx = f.origIndex;
+        return '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);animation:fadeUp 0.3s ease both;">' +
+          '<div style="width:34px;height:34px;border-radius:8px;background:var(--mint-bg);border:1px solid rgba(95,212,164,0.2);display:flex;align-items:center;justify-content:center;color:var(--mint);flex-shrink:0;">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+          '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-family:\'Syne\',sans-serif;font-size:0.88rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(l.name || l.url) + '</div>' +
+            (l.subtitle ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.62rem;color:var(--mint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">' + escPixHtml(l.subtitle) + '</div>' : '') +
+            '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.62rem;color:var(--smoke);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">' + escPixHtml(l.url) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:5px;flex-shrink:0;">' +
+            '<button onclick="unItvEditLink(' + idx + ')" style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--gold);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'var(--gold-bg)\';this.style.borderColor=\'rgba(240,192,96,0.4)\'" onmouseout="this.style.background=\'transparent\';this.style.borderColor=\'var(--rule)\'" title="Editar link">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+            '</button>' +
+            '<button onclick="unItvCopyLink(' + idx + ')" style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--plum);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'var(--plum-bg)\';this.style.borderColor=\'rgba(200,127,204,0.4)\'" onmouseout="this.style.background=\'transparent\';this.style.borderColor=\'var(--rule)\'" title="Copiar link">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+            '</button>' +
+            '<button onclick="unItvDeleteLink(' + idx + ')" style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--dim);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color=\'var(--coral)\';this.style.borderColor=\'rgba(232,112,90,0.4)\';this.style.background=\'var(--coral-bg)\'" onmouseout="this.style.color=\'var(--dim)\';this.style.borderColor=\'var(--rule)\';this.style.background=\'transparent\'" title="Remover">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    });
+  }
+
+  function unItvLoadLinks() {
+    if (!window._fbDb || !window._fbRef || !window._fbOnValue) {
+      setTimeout(unItvLoadLinks, 200);
+      return;
+    }
+    if (_unItvLinksListenerActive) return;
+    _unItvLinksListenerActive = true;
+    var ref = window._fbRef(window._fbDb, 'unitv/links');
+    window._fbOnValue(ref, function(snapshot) {
+      var data = snapshot.val();
+      _unItvLinks = data ? Object.values(data) : [];
+      unItvRenderLinks(_unItvLinks);
+    });
+  }
+
+  function unItvOpenModal(id) {
+    var el = document.getElementById(id);
+    var inner = document.getElementById(id + '-inner');
+    el.style.display = 'flex';
+    requestAnimationFrame(function() {
+      el.style.opacity = '1';
+      if (inner) inner.style.transform = 'translateY(0) scale(1)';
+    });
+  }
+
+  function unItvCloseModal(id) {
+    var el = document.getElementById(id);
+    var inner = document.getElementById(id + '-inner');
+    el.style.opacity = '0';
+    if (inner) inner.style.transform = 'translateY(20px) scale(0.97)';
+    setTimeout(function() { el.style.display = 'none'; }, 260);
+  }
+
+  window.unItvOpenAddModal = function(folderKey) {
+    _unItvEditIndex = -1;
+    _unItvAddFolder = folderKey || _unItvAddFolder || 'googledrive';
+    var sel = document.getElementById('unitv-link-folder');
+    if (sel) sel.value = _unItvAddFolder;
+    var title = document.querySelector('#unitv-add-modal-inner span');
+    if (title) title.textContent = 'Novo link';
+    document.getElementById('unitv-link-name').value = '';
+    document.getElementById('unitv-link-subtitle').value = '';
+    document.getElementById('unitv-link-url').value = '';
+    unItvOpenModal('unitv-add-modal');
+    setTimeout(function() { document.getElementById('unitv-link-name').focus(); }, 320);
+  };
+
+  window.unItvCloseAddModal = function() {
+    unItvCloseModal('unitv-add-modal');
+    document.getElementById('unitv-link-name').value = '';
+    document.getElementById('unitv-link-subtitle').value = '';
+    document.getElementById('unitv-link-url').value = '';
+    _unItvEditIndex = -1;
+  };
+
+  window.unItvEditLink = function(idx) {
+    if (!_unItvLinks[idx]) return;
+    _unItvEditIndex = idx;
+    var item = _unItvLinks[idx];
+    _unItvAddFolder = item.folder || 'googledrive';
+    var sel = document.getElementById('unitv-link-folder');
+    if (sel) sel.value = _unItvAddFolder;
+    document.getElementById('unitv-link-name').value = item.name || '';
+    document.getElementById('unitv-link-subtitle').value = item.subtitle || '';
+    document.getElementById('unitv-link-url').value = item.url || '';
+    var title = document.querySelector('#unitv-add-modal-inner span');
+    if (title) title.textContent = 'Editar link';
+    unItvOpenModal('unitv-add-modal');
+    setTimeout(function() { document.getElementById('unitv-link-name').focus(); }, 320);
+  };
+
+  window.unItvSaveLink = function() {
+    var name = document.getElementById('unitv-link-name').value.trim();
+    var subtitle = document.getElementById('unitv-link-subtitle').value.trim();
+    var url = document.getElementById('unitv-link-url').value.trim();
+    var folder = document.getElementById('unitv-link-folder').value || 'googledrive';
+    if (!url) { unItvShowToast('Digite uma URL'); document.getElementById('unitv-link-url').focus(); return; }
+    var newLinks;
+    if (_unItvEditIndex >= 0 && _unItvLinks[_unItvEditIndex]) {
+      newLinks = _unItvLinks.slice();
+      newLinks[_unItvEditIndex] = { name: name, subtitle: subtitle, url: url, category: _unItvLinks[_unItvEditIndex].category || _unItvCategory, folder: folder };
+      unItvSaveToFirebase(newLinks);
+      unItvShowToast('Link atualizado!');
+    } else {
+      newLinks = _unItvLinks.concat([{ name: name, subtitle: subtitle, url: url, category: _unItvCategory, folder: folder }]);
+      unItvSaveToFirebase(newLinks);
+      unItvShowToast('Link salvo!');
+    }
+    window.unItvCloseAddModal();
+  };
+
+  window.unItvCopyLink = function(idx) {
+    if (!_unItvLinks[idx]) return;
+    var text = _unItvLinks[idx].url;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        unItvShowToast('Link copiado!');
+      }).catch(function() { unItvCopyFallback(text); });
+    } else {
+      unItvCopyFallback(text);
+    }
+  };
+
+  function unItvCopyFallback(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:none;outline:none;box-shadow:none;background:transparent;opacity:0;';
+    document.body.appendChild(ta);
+    if (navigator.userAgent.match(/ipad|iphone/i)) {
+      var range = document.createRange();
+      range.selectNodeContents(ta);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      ta.setSelectionRange(0, 999999);
+    } else {
+      ta.select();
+    }
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    unItvShowToast(ok ? 'Link copiado!' : 'Não foi possível copiar');
+  }
+
+  window.unItvDeleteLink = function(idx) {
+    if (!_unItvLinks[idx]) return;
+    if (!confirm('Remover o link "' + (_unItvLinks[idx].name || _unItvLinks[idx].url) + '"?')) return;
+    var newLinks = _unItvLinks.filter(function(_, i) { return i !== idx; });
+    unItvSaveToFirebase(newLinks);
+    unItvShowToast('Link removido');
+  };
+
+  // Carrega links ao entrar na tela
+  var _origGoToUnitv = goTo;
+  goTo = function(section) {
+    _origGoToUnitv(section);
+    if (section === 'unitv') { setTimeout(unItvLoadFolders, 400); setTimeout(unItvLoadLinks, 400); setTimeout(unItvLoadCategories, 400); setTimeout(unItvLoadDeletedDefaults, 400); setTimeout(unItvLoadSectionOrder, 400); }
+  };
+</script>
+
+</body>
+</html>
