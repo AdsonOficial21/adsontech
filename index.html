@@ -3221,7 +3221,7 @@
   function unItvRenderFolders() {
     var wrap = document.getElementById('unitv-folder-wrap');
     if (!wrap) return;
-    wrap.innerHTML = _unItvFolders.map(function(f) {
+    wrap.innerHTML = '<div id="unitv-links-list-__none__" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>' + _unItvFolders.map(function(f) {
       var key = f.key, name = f.name;
       return '<div>' +
         '<div id="unitv-folder-' + key + '" class="unitv-folder" onclick="unItvToggleFolder(\'' + key + '\')">' +
@@ -3243,7 +3243,7 @@
     if (sel) {
       sel.innerHTML = _unItvFolders.map(function(f) {
         return '<option value="' + f.key + '">' + escPixHtml(f.name) + '</option>';
-      }).join('');
+      }).join('') + '<option value="__none__">Sem pasta</option>';
     }
   }
 
@@ -3520,35 +3520,16 @@
     el.textContent = count + (count === 1 ? ' link' : ' links');
   }
 
-  function unItvRenderLinks(links) {
-    var byFolder = {};
-    _unItvFolders.forEach(function(f) { byFolder[f.key] = []; });
-    (links || []).forEach(function(l, i) {
-      if ((l.category || 'unitv') !== _unItvCategory) return;
-      var key = l.folder || 'googledrive';
-      if (!byFolder[key]) byFolder[key] = [];
-      byFolder[key].push({ item: l, origIndex: i });
-    });
-    _unItvFolders.forEach(function(f) {
-      var key = f.key;
-      var filtered = byFolder[key] || [];
-      unItvUpdateFolderCount(key, filtered.length);
-      var list = document.getElementById('unitv-links-list-' + key);
-      if (!list) return;
-      if (filtered.length === 0) {
-        list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhum link salvo.</div>';
-        return;
-      }
-      list.innerHTML = filtered.map(function(f) {
+  function unItvLinkRowHtml(f) {
         var l = f.item, idx = f.origIndex;
         return '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);animation:fadeUp 0.3s ease both;">' +
           '<div style="width:34px;height:34px;border-radius:8px;background:var(--mint-bg);border:1px solid rgba(95,212,164,0.2);display:flex;align-items:center;justify-content:center;color:var(--mint);flex-shrink:0;">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
           '</div>' +
           '<div style="flex:1;min-width:0;">' +
-            '<div style="font-family:\'Syne\',sans-serif;font-size:0.88rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(l.name || l.url) + '</div>' +
+            '<div style="font-family:\'Syne\',sans-serif;font-size:0.88rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escPixHtml(l.name || l.url) + '</div>' +
             (l.subtitle ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.62rem;color:var(--mint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">' + escPixHtml(l.subtitle) + '</div>' : '') +
-            '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.62rem;color:var(--smoke);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">' + escPixHtml(l.url) + '</div>' +
+            '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.62rem;color:#fff;white-space:normal;word-break:break-all;user-select:text;-webkit-user-select:text;cursor:text;margin-top:2px;">' + escPixHtml(l.url) + '</div>' +
           '</div>' +
           '<div style="display:flex;gap:5px;flex-shrink:0;">' +
             '<button onclick="unItvEditLink(' + idx + ')" style="width:30px;height:30px;border:1px solid var(--rule);background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--gold);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'var(--gold-bg)\';this.style.borderColor=\'rgba(240,192,96,0.4)\'" onmouseout="this.style.background=\'transparent\';this.style.borderColor=\'var(--rule)\'" title="Editar link">' +
@@ -3562,7 +3543,38 @@
             '</button>' +
           '</div>' +
         '</div>';
-      }).join('');
+  }
+
+  function unItvRenderLinks(links) {
+    var byFolder = {};
+    if (_unItvLastSavedFolder) {
+      var _fk = _unItvLastSavedFolder; _unItvLastSavedFolder = null;
+      setTimeout(function() {
+        var fe = document.getElementById('unitv-folder-' + _fk), be = document.getElementById('unitv-folder-body-' + _fk);
+        if (fe && be && !fe.classList.contains('open')) { fe.classList.add('open'); be.classList.add('open'); }
+      }, 50);
+    }
+    _unItvFolders.forEach(function(f) { byFolder[f.key] = []; });
+    (links || []).forEach(function(l, i) {
+      if ((l.category || 'unitv') !== _unItvCategory) return;
+      var key = l.folder || 'googledrive';
+      if (!byFolder[key]) key = '__none__';
+      if (!byFolder[key]) byFolder[key] = [];
+      byFolder[key].push({ item: l, origIndex: i });
+    });
+    var looseList = document.getElementById('unitv-links-list-__none__');
+    if (looseList) looseList.innerHTML = (byFolder['__none__'] || []).map(unItvLinkRowHtml).join('');
+    _unItvFolders.forEach(function(f) {
+      var key = f.key;
+      var filtered = byFolder[key] || [];
+      unItvUpdateFolderCount(key, filtered.length);
+      var list = document.getElementById('unitv-links-list-' + key);
+      if (!list) return;
+      if (filtered.length === 0) {
+        list.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--ash);text-align:center;padding:20px 0;">Nenhum link salvo.</div>';
+        return;
+      }
+      list.innerHTML = filtered.map(unItvLinkRowHtml).join('');
     });
   }
 
@@ -3637,12 +3649,16 @@
     setTimeout(function() { document.getElementById('unitv-link-name').focus(); }, 320);
   };
 
+  var _unItvLastSavedFolder = null;
   window.unItvSaveLink = function() {
     var name = document.getElementById('unitv-link-name').value.trim();
     var subtitle = document.getElementById('unitv-link-subtitle').value.trim();
     var url = document.getElementById('unitv-link-url').value.trim();
-    var folder = document.getElementById('unitv-link-folder').value || 'googledrive';
+    var folder = document.getElementById('unitv-link-folder').value || '';
     if (!url) { unItvShowToast('Digite uma URL'); document.getElementById('unitv-link-url').focus(); return; }
+    // Sem pasta escolhida/existente: o link fica solto na seção (não cria pasta)
+    if (!_unItvFolders.some(function(f) { return f.key === folder; })) folder = '__none__';
+    _unItvLastSavedFolder = folder;
     var newLinks;
     if (_unItvEditIndex >= 0 && _unItvLinks[_unItvEditIndex]) {
       newLinks = _unItvLinks.slice();
